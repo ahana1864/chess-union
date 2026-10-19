@@ -26,7 +26,7 @@ Rules for every step:
   Build the board with react-chessboard: drag and drop plus click-to-move, legal-move dots, capture rings, last-move highlight, selected square, coordinates, and a promotion picker (the player must choose). Show check, checkmate, stalemate and draw states and a New game button. Render pieces as text glyphs in Noto Sans Symbols 2 per UI-SPEC (white pieces `--panel` with an ink stroke, black pieces ink), which also avoids a piece-licence question. Use the UI-SPEC board colours. No unions yet.
   Done when: two people can play a full legal game including castling, en passant, promotion and checkmate; layout does not need to be final.
 
-- [ ] **2. Union rules engine** (F2, F3)
+- [x] **2. Union rules engine** (F2, F3)
   Create `src/lib/rulesConfig.js` (all thresholds and durations as one exported object) and `src/lib/unionRules.js` as pure functions with no React: `createUnionState()`, `legalMoves(chess, unions)`, `applyMove(state, move)`, plus news events returned as data (event type and parameters, no text). Implement the Game design section of the PRD for the pawn union: unpaid loss detection, grievance up on unpaid pawn loss and down on any capture, strike at 3 for 3 of that side's turns, cooldown of 5 turns, strike-break when the filtered list is empty but chess.js still has legal moves. Write Vitest tests for: an unpaid loss, a paid loss (immediate recapture), grievance falling on capture, strike trigger and expiry, cooldown blocks a new strike, strike-break when in check, en passant and promotion blocked during a strike, fool's mate still ends correctly. No UI in this step.
   Done when: all tests pass and the test names read like the rules.
 
