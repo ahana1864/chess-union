@@ -1,18 +1,17 @@
 # Chess Union — UI spec (light theme)
 
-Source: the "Chess Union UI" design mockups (Desktop · game in progress, Desktop · pawns on strike, Mobile · pawns on strike). This file turns them into exact values for the build. Where it differs from the PRD on visual details, **this file wins**. Behaviour and rules come from the PRD.
+Source: the "Chess Union UI" design mockups (Desktop · game in progress, Desktop · pawns on strike) — the Mobile board in the canvas is out of scope for the build. This file turns them into exact values for the build. Where it differs from the PRD on visual details, **this file wins**. Behaviour and rules come from the PRD.
 
 The product name is "Chess Union". The logo is a cardboard badge with a pawn glyph plus the wordmark.
 
 ## Layouts
 
-Two first-class layouts. Desktop is the main demo view.
+Desktop only. The mobile layout and PWA were dropped from scope; the Mobile mockup in the canvas is ignored.
 
 | Layout | Breakpoint | Reference size | Structure |
 | --- | --- | --- | --- |
 | Desktop | 900px and up | 1440 × 900 | Header (68px), then three columns: unions 320px, board centre, news and moves 360px. No page scroll. |
 | Compact desktop | 900 to 1199px | 1024 × 768 | Same three columns, with the side columns narrowed to 260px and 280px and the board sized to fit (see Board). |
-| Mobile | below 900px | 390 × 844 | Single column: header, opponent bar, board, your bar, news card, action bar. |
 
 Page background is `--paper`. All text meets 4.5:1 contrast on the surface it sits on.
 
@@ -51,22 +50,21 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 
 ## Pieces and board
 
-- Board is an 8 × 8 grid of equal squares, no gaps. Outer outline: 3px `--ink` (box-shadow) on desktop, 2px top and bottom borders on mobile.
+- Board is an 8 × 8 grid of equal squares, no gaps. Outer outline: 3px `--ink` (box-shadow).
 - Piece glyph size is 0.9 × the square (58px on 64px squares, 34px on 48.75px squares), centred.
-- **White pieces:** fill `--panel`, `-webkit-text-stroke` 1.5px `--ink` (1.2px on mobile). **Black pieces:** fill `--ink`, no stroke.
+- **White pieces:** fill `--panel`, `-webkit-text-stroke` 1.5px `--ink`. **Black pieces:** fill `--ink`, no stroke.
 - **Coordinates:** rank numbers in the top-left of the a-file squares, file letters in the bottom-right of the first-rank squares, 12px/700, colour `--coord-on-light` or `--coord-on-dark` by square colour.
 - **Legal-move dot:** 24px circle (on 80px squares), `rgba(27,26,23,0.3)`, centred on empty target squares.
 - **Capture ring:** circle inset 4px with a 6px border `rgba(215,38,61,0.6)`.
 - **Last move:** both squares use the `-hl` colours. **Selected piece:** `--sq-selected`.
-- **Board size:** desktop board is 640 × 640 at 1440 × 900 (80px squares). It is computed as `min(640px, 100dvh - 68px - 160px)` so it also fits at 1280 × 720 (about 492px) and 1024 × 768 (about 540px). Mobile board is the full width (390px at the reference size).
-- **Picket sign (on striking pawns):** a small cardboard placard on a stick in the top-right of the pawn's square, rotated 8°. Placard 30 × 20 (18 × 12 on mobile), `--cardboard`, 2px `--ink` border, two stripes inside (3px `--strike`, 3px `--ink`); stick 3 × 16, `--ink`. Decorative, so `aria-hidden="true"`.
+- **Board size:** desktop board is 640 × 640 at 1440 × 900 (80px squares). It is computed as `min(640px, 100dvh - 68px - 160px)` so it also fits at 1280 × 720 (about 492px) and 1024 × 768 (about 540px).
+- **Picket sign (on striking pawns):** a small cardboard placard on a stick in the top-right of the pawn's square, rotated 8°. Placard 30 × 20, `--cardboard`, 2px `--ink` border, two stripes inside (3px `--strike`, 3px `--ink`); stick 3 × 16, `--ink`. Decorative, so `aria-hidden="true"`.
 
 ## Header
 
 - Desktop: 68px tall, `--panel` background, 2px bottom border `--ink`, padding 0 28px.
 - Left: logo badge (40 × 40, `--cardboard`, 2px `--ink` border, radius 6, rotated −5°, a ♟ glyph in Noto Sans Symbols 2 at 26px), wordmark "CHESS UNION" in Anton 34px/1, letter-spacing 1px, then the tagline "Chess where the pieces unionize" in 14px `--ink-2`.
 - Right: "How unions work" (outline button) and "New game" (solid `--ink` button, `--paper` text). Both 44px tall, padding 0 18px, 15px/700.
-- Mobile: 56px tall, wordmark 27px, 32px badge, and a single 44 × 44 menu button (`aria-label="Menu"`).
 
 ## Desktop: left column, "The Unions" (320px)
 
@@ -93,21 +91,10 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 - **Moves:** heading "MOVES" (Anton 22px), then a 3-column grid (`36px 1fr 1fr`, gap 4 8, 15px/500): move number in `--ink-2`, White's move, Black's move.
 - **Bottom buttons:** Undo and Resign, two columns, 44px, 2px `--ink` border, radius 10.
 
-## Mobile layout (390 × 844)
-
-Top to bottom:
-
-1. Header, 56px.
-2. **Opponent bar** (padding 8 12 6): side circle (20px), name 15px/700, "Bot" caption 13px, captured glyphs 18px. Below it, three compact union chips in one row (gap 6): each is a card with 1.5px `--ink` border, radius 8, padding 5 8; name 12px/700 on the left, status word on the right (Calm in `--calm-fg`, strike in `--strike-deep`), and a 6px meter (segments radius 3) underneath.
-3. **Board**, full width, 390 × 390, with the strike banner overlaid on the top: padding 8 12, a 40 × 27 placard, "PAWNS ON STRIKE" in Anton 26px and "3 turns left. Capture to calm them." in 13px/500.
-4. **Your bar:** the same three union chips, then the side row ("White · You · to move") with your captured glyphs.
-5. **News card** (fills the remaining height, margin 0 12): `--panel`, 2px `--ink` border, radius 12, padding 8 10. Header "UNION NEWS" in Anton 16px and "LIVE"; items are 13px/1.3 with an 11px tag pill. Show the latest three.
-6. **Action bar**, 60px, top border 2px `--ink`, three equal buttons with a 24px icon and a 12px/700 label: New game, How unions work, Undo.
-
 ## Start screen and Rules modal (not mocked up; build from the PRD with these tokens)
 
 - **Start screen:** centred card on `--paper`, max-width 480px. Logo and tagline, then "Two players" and "Vs bot" as large selectable cards (2px border; selected = `--ink` background, `--paper` text), a side choice (White, Black, Random), and a full-width "Start" button (`--ink`, 52px tall).
-- **Rules modal:** first visit and from "How unions work". Desktop: centred, max-width 560px; mobile: bottom sheet with 22px top corners. Three short cards with a tiny illustration each: "Unpaid loss", "Strike", "King crosses the picket line". Primary button "Got it". Escape closes.
+- **Rules modal:** first visit and from "How unions work". Centred, max-width 560px. Three short cards with a tiny illustration each: "Unpaid loss", "Strike", "King crosses the picket line". Primary button "Got it". Escape closes.
 - **Game over:** centred card with the result in Anton 40px, a one-line union sign-off, and "New game".
 - **Promotion picker:** four piece glyphs in a row over the promotion square; the player must choose.
 

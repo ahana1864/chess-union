@@ -10,7 +10,7 @@ Rules for every step:
 - ChessUnion-PRD.md wins on behaviour; UI-SPEC.md wins on visuals. Read both fully before step 0.
 - The game rules come from chess.js. Read the installed version's README or types before using its API, and read react-chessboard's docs for the installed version before using its props. Never rely on memory for either.
 - Keep code simple. Add a short comment only where the *why* is not obvious, so I can explain any piece to judges.
-- Finish all P0 before any P1 or P2. Both layouts matter: mobile (under 900px) and desktop (900px and up, the primary demo view).
+- Finish all P0 before any P1 or P2. Desktop only (900px and up). No mobile layout, no PWA, no deployment.
 - Never cut the pawn strike, strike-break, the union panel or the news ticker.
 - No paid APIs, no backend, no AI services. Plain JavaScript, plain CSS with variables, no Tailwind.
 
@@ -38,9 +38,9 @@ Rules for every step:
   Build `UnionPanel` and `UnionCard` (meters and status chips per UI-SPEC), `StrikeBanner` ("PAWNS ON STRIKE" and "The King crosses the picket line"), picket signs on striking pawns, the blocked-move toast with a pawn shake, and `NewsFeed` with a headline function that turns events into text. Write at least three funny headline variants per event type (grievance filed, grumbling, strike, strike ends, cooldown, strike-break, capture calms things down) and choose deterministically so tests stay stable. Use an `aria-live="polite"` region for news. Match the "Desktop · pawns on strike" mockup.
   Done when: the strike screen looks like the mockup at 1440 × 900.
 
-- [ ] **5. Layouts** (F8, F9)
-  Desktop at 900px and up: header, then three columns (unions, board, news and moves), no page scroll, board size `min(640px, 100dvh - 68px - 160px)`. Compact desktop at 900 to 1199px as in UI-SPEC. Mobile below 900px: single column per the "Mobile · pawns on strike" mockup with the compact union chips, one news card and the action bar. Add the move list.
-  Done when: at 390 × 844, 1024 × 768, 1280 × 720 and 1440 × 900 nothing overflows or clips; report what each looks like.
+- [ ] **5. Desktop layout** (F8)
+  Match the "Desktop · game in progress" and "Desktop · pawns on strike" mockups: header, then three columns (unions, board, news and moves), no page scroll, board size `min(640px, 100dvh - 68px - 160px)`. Compact desktop at 900 to 1199px as in UI-SPEC. Add the move list.
+  Done when: at 1024 × 768, 1280 × 720 and 1440 × 900 nothing overflows or clips; report what each looks like.
 
 - [ ] **6. Start screen, Rules modal, game over, hot-seat** (F7, F10)
   Start screen (Two players or Vs bot disabled until step 7, side choice, Start). Rules modal with three short cards (unpaid loss, strike, strike-break), shown on first visit (remember in `localStorage` inside try/catch) and from the header. Game-over card with a union-flavoured sign-off. Clear turn indicator for hot-seat.
@@ -60,26 +60,22 @@ Rules for every step:
   Add the bishop work-to-rule (at most 2 squares for 3 turns after 2 unpaid bishop losses) and the rook union break (same rook 4 moves in a row, rooks sit out 1 turn) to the engine with tests first, then the UI (meters, chips, news, banners). Add captured-piece trays per side.
   Done when: tests pass and both unions show up correctly in the panel; if this runs long, cut the rook union first.
 
-- [ ] **10. PWA** (F15)
-  Web manifest (name "Chess Union", short_name, `display: standalone`, theme colour `#F6F1E7`, 192 and 512 icons plus a maskable one), `apple-touch-icon` 180 × 180, the `apple-mobile-web-app-capable` and status-bar meta tags, `viewport-fit=cover` with safe-area padding. A small service worker that caches the app shell only. Draw the icon from a simple pawn glyph on a cardboard badge, no copyrighted logos.
-  Done when: `npm run build` and `npm run preview` work, Lighthouse PWA checks pass, and the README says "Share > Add to Home Screen" for iPhone.
-
-- [ ] **11. Polish and optional features** (F16, F17, F18)
+- [ ] **10. Polish and optional features** (F16, F17, F18)
   In this order, stopping when time runs short: reduced-motion support, keyboard play (arrow keys move a cursor over the board, Enter selects, Escape cancels), focus order and aria labels, undo that restores union state, resume a game from `localStorage`, strictness setting, sound effects with a mute toggle, dark variant.
-  Done when: no console errors; Lighthouse accessibility is 90 or more on both layouts.
+  Done when: no console errors; Lighthouse accessibility is 90 or more.
 
-> **Checkpoint, about hour 19:** stop building features. Do steps 12 to 14 only.
+> **Checkpoint, about hour 19:** stop building features. Do steps 11 to 13 only.
 
-- [ ] **12. Deploy prep and README**
-  Clean `vite build`, a deploy config if needed, page title and Open Graph tags. README: a screenshot or GIF first, the live link, "What I changed" (the union rule layer, the UI, the news system, the bot; credit chess as the original and Lichess and Chess.com as inspiration only), how the rules work, the `?demo=1` and `?demo=2` links, how to run and test, and licences (chess.js BSD-2-Clause, react-chessboard MIT, fonts and icon licences). Add a LICENSE file and an in-app credits line.
+- [ ] **11. README and credits**
+  README: a screenshot or GIF first, "What I changed" (the union rule layer, the UI, the news system, the bot; credit chess as the original and Lichess and Chess.com as inspiration only), how the rules work, the `?demo=1` and `?demo=2` links on localhost, how to run (`npm install`, `npm run dev`) and test, and licences (chess.js BSD-2-Clause, react-chessboard MIT, fonts and icon licences). Add a LICENSE file, an in-app credits line, and a page title.
   Done when: a stranger can clone, run and understand it from the README alone.
 
-- [ ] **13. Demo video script**
+- [ ] **12. Demo video script**
   `scripts/record-demo.mjs` using Playwright (dev dependency only): 1440 × 900, opens `/?demo=1`, then runs the shot list in DEMO.md with natural pauses and saves a WebM; an ffmpeg step adds captions and the end card and produces `demo.mp4` of 90 seconds or less.
   Done when: `node scripts/record-demo.mjs` produces a watchable video from a clean run.
 
-- [ ] **14. Final check**
-  Run build, lint, tests; open the deployed link at the four layout sizes and on a phone; check `?demo=1` and `?demo=2`; confirm the README links work. List anything broken.
+- [ ] **13. Final check**
+  Run build, lint, tests; run `npm run dev` and check the three desktop sizes; check `?demo=1` and `?demo=2`; confirm the README links work. List anything broken.
   Done when: the list is empty or knowingly accepted.
 
 ---
@@ -88,4 +84,4 @@ Rules for every step:
 
 - **About hour 13:** all of P0 (steps 0 to 6) done. If behind, cut in this order: sounds, undo and resume, strictness, rook union, bishop union, bot.
 - **About hour 19:** no new features.
-- **Last 2 hours:** deploy, record, submit (repo link plus a short showcase video). Ask the organisers whether pre-written code is allowed before the clock, and start step 0 at kickoff.
+- **Last 2 hours:** record and submit (repo link plus a short showcase video). Ask the organisers whether pre-written code is allowed before the clock, and start step 0 at kickoff.

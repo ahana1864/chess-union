@@ -8,7 +8,7 @@ Chess Union is a real, playable chess game in the browser with one absurd extra 
 
 The original is chess itself, as played on sites like Lichess and Chess.com. Chess Union keeps the full rules and adds a labour-relations layer on top: grievance meters, strikes, a union rep who narrates the game, and a "Union News" ticker. The twist is also a real strategic trade-off. Sacrificing pawns early buys tempo but costs you your pawns later.
 
-- **What it is:** a website (React), playable on laptop and phone, installable as a PWA.
+- **What it is:** a desktop website (React) that runs locally. No deployment and no mobile layout.
 - **Event:** Neura AI Club STEAL//REMAKE, a solo 24-hour remix hackathon. Judges score originality, functionality, creative value and attribution. Submission: the git repo plus a short video focused on what was built (a showcase, not plain explanations).
 - **Constraints met:** no paid APIs or services, no backend, no AI needed (the optional bot is a plain move-picking algorithm), libraries are open source and credited.
 
@@ -26,7 +26,7 @@ A hackathon "remake" has to be more than a reskin, and a judge has about two min
 
 1. A complete, correct game of chess that can be played start to finish.
 2. The pawn union strike works reliably and is understood at a glance (meters, banner, picket signs, news line).
-3. Desktop and mobile are both first-class layouts. Laptop is the main demo view.
+3. Desktop only: a laptop browser is the demo view.
 4. Works for one person on one laptop (hot-seat) and against a simple bot, with no accounts and no server.
 
 **Non-goals**
@@ -88,20 +88,20 @@ P0 is the whole joke working on both layouts; the project stands on P0 alone. Fi
 | F6 | Union News ticker | P0 | Every union event produces a funny headline in a scrolling feed |
 | F7 | Hot-seat two players | P0 | Two people can play on one screen with a clear turn indicator |
 | F8 | Desktop layout | P0 | At 900px and up: board in the centre, union panel left, news and move list right, no page scroll |
-| F9 | Mobile layout | P0 | Below 900px: single column with board, compact union chips and a short news card |
+| F9 | ~~Mobile layout~~ | Dropped | Out of scope |
 | F10 | Rules modal | P0 | A plain-English "How unions work" explainer opens from the header and on first visit |
 | F11 | Bot opponent | P1 | Random or greedy legal-move bot; its unions strike too |
 | F12 | Bishop and rook unions | P1 | Work-to-rule and union break behave as in Game design |
 | F13 | Demo position (`?demo=1`) | P1 | Loads a position where one more unpaid pawn loss triggers a strike, so the demo is repeatable |
 | F14 | Move list and captured pieces | P1 | Algebraic move list and captured-piece trays per side |
-| F15 | Installable PWA | P1 | Manifest, icons and app-shell caching; on iPhone, Share > Add to Home Screen opens it full-screen |
+| F15 | ~~Installable PWA~~ | Dropped | Out of scope |
 | F16 | Sound effects | P2 | Short strike chant and move sounds, with a mute toggle |
 | F17 | Undo and resume | P2 | Undo restores union state too; game state survives reload via localStorage |
 | F18 | Strictness setting | P2 | Choose strike thresholds: relaxed (4), default (3), militant (2) |
 
 ## UI design
 
-Two first-class layouts. Desktop (900px and up, 1440 × 900 reference) is the main demo view; mobile (below 900px, 390 × 844 reference) is a single column. Exact colours, type and spacing are in UI-SPEC.md, which wins on visuals.
+Desktop only (900px and up, 1440 × 900 reference); a compact desktop range of 900–1199px must also fit. Exact colours, type and spacing are in UI-SPEC.md, which wins on visuals.
 
 **Visual style**
 
@@ -117,13 +117,6 @@ Two first-class layouts. Desktop (900px and up, 1440 × 900 reference) is the ma
 | Left, about 320px: "The Unions" | Two stacked cards, one per side. Each lists Pawns, Bishops and Rooks with a grievance meter and a status chip (Calm, Grumbling, On strike with turns left, Cooldown). The side to move is highlighted. |
 | Centre | Board, as large as fits (up to about 640px), with a player bar above and below (name, side, captured pieces). Strike banner slides over the top of the board. |
 | Right, about 360px: "Union News" | Scrolling headline feed (newest first), then the move list, then Undo and Resign buttons. |
-
-**Mobile layout (single column)**
-
-- Top bar with the logo and a menu button.
-- Opponent bar with compact union chips, then the board at full width, then your bar with chips.
-- A news card below the board showing the latest three headlines.
-- Bottom action bar: New game, How unions work, Undo.
 
 **Screens and states**
 
@@ -173,7 +166,7 @@ Chess Union is a frontend-only React app. All game state lives in memory, with o
 
 | Layer | Choice | Notes |
 | --- | --- | --- |
-| Framework | React + Vite, plain JavaScript | Static build, deployable on Vercel or Netlify |
+| Framework | React + Vite, plain JavaScript | Runs locally with `npm run dev`; no deployment |
 | Styling | Plain CSS with CSS variables | Tokens come from UI-SPEC.md; no Tailwind |
 | Chess rules | [chess.js](https://github.com/jhlywa/chess.js) | Move generation, validation, check, mate, stalemate, draws. BSD-2-Clause |
 | Board UI | [react-chessboard](https://github.com/Clariity/react-chessboard) | Drag and drop, square highlights, custom pieces. MIT. Check its docs for the exact props of the installed version |
@@ -226,7 +219,7 @@ SideUnions {
 - A striking pawn can still be captured and still counts as attacking squares.
 - Fool's mate and other short games must still end correctly with unions in play.
 - `localStorage` access is wrapped in try/catch so the game works in private windows.
-- Layout is tested at 390 × 844, 1024 × 768, 1280 × 720 and 1440 × 900 with no overflow.
+- Layout is tested at 1024 × 768, 1280 × 720 and 1440 × 900 with no overflow.
 
 ## Success criteria and demo
 
@@ -235,7 +228,7 @@ Chess Union succeeds if a judge sees a strike within the first minute and finish
 | Judging criterion | What we show |
 | --- | --- |
 | Originality | A familiar game with a new, readable rule layer and a strategic trade-off, not a reskin |
-| Functionality | A full game with correct chess rules, a bot, the strike, strike-break and checkmate all working; tests pass; deployed link works on laptop and phone |
+| Functionality | A full game with correct chess rules, a bot, the strike, strike-break and checkmate all working; tests pass; runs from the repo with two commands |
 | Creative value | Picket signs, banner, union rep narration, news ticker, a funny rules modal |
 | Attribution | README credits chess, chess.js, react-chessboard and any assets; "What I changed" section is explicit |
 
@@ -248,9 +241,7 @@ Chess Union succeeds if a judge sees a strike within the first minute and finish
 | 0:30–0:50 | Third unpaid loss; banner "PAWNS ON STRIKE"; picket signs; try to move a pawn and it refuses | Three strikes and they walk out |
 | 0:50–1:10 | Capture with a knight; grievance drops; then a check forces strike-break | Even kings cross picket lines |
 | 1:10–1:25 | Quick game against the bot ending in checkmate; game-over card | A real game of chess underneath |
-| 1:25–1:30 | End card with repo link and live URL | Chess Union · built with chess.js |
-
-Optional last five seconds: the same site installed on an iPhone.
+| 1:25–1:30 | End card with repo link | Chess Union · built with chess.js |
 
 ## Build plan, risks and cut list
 
@@ -261,10 +252,10 @@ All P0 work is scheduled before any P1. Hour counts are estimates, not measureme
 | 0–2 | Scaffold, install chess.js and react-chessboard, board renders, moves play | A full legal game can be played |
 | 2–5 | Rules engine + tests: grievance, pawn strike, cooldown, strike-break | Tests pass for the scripted scenarios |
 | 5–9 | Union panel, strike banner, picket signs, news ticker, Rules modal | Strike is visible and understandable |
-| 9–13 | Desktop and mobile layouts at all breakpoints | No overflow at the four test sizes |
+| 9–13 | Desktop layout at all three test sizes | No overflow or clipping |
 | 13–16 | Bot, demo position, move list, captured pieces | `?demo=1` always shows a strike within three moves |
 | 16–19 | Bishop and rook unions, sounds, polish | Optional features stable or cut |
-| 19–21 | PWA, deploy, README, attribution | Live HTTPS link works; Add to Home Screen works on iPhone |
+| 19–21 | README, attribution | A stranger can clone and run it |
 | 21–24 | Record the demo video, final check, submit | Repo link and video sent |
 
 **Risks**

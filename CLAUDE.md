@@ -5,6 +5,7 @@
 Chess Union is a real, playable chess game (React, frontend-only) with one extra
 rule: pieces form unions, and if you keep throwing them away for nothing, they
 go on strike. Built solo for the Neura AI Club STEAL//REMAKE 24-hour hackathon.
+Desktop-only, runs locally — no mobile layout, no PWA, no deployment.
 Full behaviour spec: `ChessUnion-PRD.md` (wins on behaviour). Full visual spec:
 `UI-SPEC.md` (wins on visuals). Build steps: `PROMPTS.md`.
 
@@ -25,7 +26,11 @@ Full behaviour spec: `ChessUnion-PRD.md` (wins on behaviour). Full visual spec:
 
 ## Feature checklist (F1–F18)
 
-P0 — the whole joke working on both layouts; the project stands on P0 alone.
+Desktop only (900px+, laptop browser). No mobile layout, no PWA, no deployment
+— the app runs locally with `npm run dev`. F9 (mobile layout) and F15
+(installable PWA) are dropped from scope.
+
+P0 — the whole joke working on desktop; the project stands on P0 alone.
 
 - F1 Playable chess — drag/drop + click-to-move, legal-move dots, check/mate/stalemate/draw
 - F2 Pawn union rules — 3 unpaid pawn losses → 3-turn strike; captures lower grievance; cooldown
@@ -35,7 +40,6 @@ P0 — the whole joke working on both layouts; the project stands on P0 alone.
 - F6 Union News ticker — funny headline per union event
 - F7 Hot-seat two players — clear turn indicator
 - F8 Desktop layout (900px+) — unions / board / news+moves, no page scroll
-- F9 Mobile layout (<900px) — single column, compact union chips, short news card
 - F10 Rules modal — plain-English explainer, opens from header and on first visit
 
 P1 — stretch, after all P0 is done.
@@ -44,7 +48,6 @@ P1 — stretch, after all P0 is done.
 - F12 Bishop and rook unions — work-to-rule and union break
 - F13 Demo position (`?demo=1`, `?demo=2`) — repeatable scripted scenarios
 - F14 Move list and captured-piece trays
-- F15 Installable PWA — manifest, icons, app-shell caching
 
 P2 — optional polish, cut first if time runs short.
 
@@ -117,8 +120,8 @@ src/
   installed version before using its props. Never rely on memory for either.
 - Keep code simple. Add a short comment only where the *why* is not obvious,
   so any piece can be explained to judges on the spot.
-- Finish all P0 before any P1 or P2. Both layouts matter: mobile (under
-  900px) and desktop (900px and up, the primary demo view).
+- Finish all P0 before any P1 or P2. Desktop only (900px and up); no mobile
+  layout, no PWA, no deployment — the app runs locally with `npm run dev`.
 - Never cut the pawn strike, strike-break, the union panel or the news
   ticker — in that order, those four are non-negotiable even under time
   pressure.
