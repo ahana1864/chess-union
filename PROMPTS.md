@@ -42,7 +42,7 @@ Rules for every step:
   Match the "Desktop · game in progress" and "Desktop · pawns on strike" mockups: header, then three columns (unions, board, news and moves), no page scroll, board size `min(640px, 100dvh - 68px - 160px)`. Compact desktop at 900 to 1199px as in UI-SPEC. Add the move list.
   Done when: at 1024 × 768, 1280 × 720 and 1440 × 900 nothing overflows or clips; report what each looks like.
 
-- [ ] **6. Start screen, Rules modal, game over, hot-seat** (F7, F10)
+- [x] **6. Start screen, Rules modal, game over, hot-seat** (F7, F10)
   Start screen (Two players or Vs bot disabled until step 7, side choice, Start). Rules modal with three short cards (unpaid loss, strike, strike-break), shown on first visit (remember in `localStorage` inside try/catch) and from the header. Game-over card with a union-flavoured sign-off. Clear turn indicator for hot-seat.
   Done when: a stranger can open the site, read the modal and play a game with a strike without help.
 

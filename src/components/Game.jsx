@@ -8,6 +8,8 @@ import { StrikeBanner } from './StrikeBanner'
 import { NewsFeed } from './NewsFeed'
 import { MoveList } from './MoveList'
 import { Header } from './Header'
+import { GameOverCard } from './GameOverCard'
+import { statusText } from '../lib/statusText'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -20,18 +22,7 @@ function isLightSquare(square) {
   return (file + rank) % 2 === 1
 }
 
-function statusText(chess) {
-  const toMove = chess.turn() === 'w' ? 'White' : 'Black'
-  if (chess.isCheckmate()) {
-    return `Checkmate — ${toMove === 'White' ? 'Black' : 'White'} wins`
-  }
-  if (chess.isStalemate()) return 'Stalemate — draw'
-  if (chess.isDraw()) return 'Draw'
-  if (chess.isGameOver()) return 'Game over'
-  return chess.isCheck() ? `${toMove} to move — check!` : `${toMove} to move`
-}
-
-export function Game() {
+export function Game({ config, onReturnToStart, onShowRules }) {
   const game = useGame()
   const chess = game.chess
 
@@ -189,16 +180,6 @@ export function Game() {
     setPromotionMove(null)
   }
 
-  function newGame() {
-    game.newGame()
-    setLastMove(null)
-    setPromotionMove(null)
-    setBlockedMessage(null)
-    setBanner(null)
-    lastBannerEventRef.current = null
-    clearSelection()
-  }
-
   function buildSquareStyles() {
     const styles = {}
 
@@ -237,6 +218,7 @@ export function Game() {
   const chessboardOptions = {
     id: 'chess-union-board',
     position: game.fen,
+    boardOrientation: config?.side === 'black' ? 'black' : 'white',
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
@@ -253,7 +235,7 @@ export function Game() {
 
   return (
     <div className="app-shell">
-      <Header onNewGame={newGame} />
+      <Header onNewGame={onReturnToStart} onShowRules={onShowRules} />
 
       <div className="layout">
         <aside className="unions-column">
@@ -291,6 +273,10 @@ export function Game() {
           <MoveList history={chess.history()} />
         </aside>
       </div>
+
+      {chess.isGameOver() ? (
+        <GameOverCard chess={chess} onNewGame={onReturnToStart} />
+      ) : null}
     </div>
   )
 }

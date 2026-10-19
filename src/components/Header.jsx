@@ -1,4 +1,4 @@
-export function Header({ onNewGame }) {
+export function Header({ onNewGame, onShowRules }) {
   return (
     <header className="app-header">
       <div className="logo-badge" aria-hidden="true">
@@ -9,7 +9,11 @@ export function Header({ onNewGame }) {
         <p className="tagline">Chess where the pieces unionize</p>
       </div>
       <div className="header-actions">
-        <button type="button" className="header-button header-button-outline">
+        <button
+          type="button"
+          className="header-button header-button-outline"
+          onClick={onShowRules}
+        >
           How unions work
         </button>
         <button type="button" className="header-button header-button-solid" onClick={onNewGame}>
