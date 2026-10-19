@@ -1,20 +1,28 @@
 import { UnionCard } from './UnionCard'
 
-export function UnionPanel({ unions, sideToMove }) {
+const SIDE_LABELS = { white: 'White', black: 'Black' }
+
+// Opponent on top, you on the bottom, matching the board orientation (so if
+// you're playing Black, Black's card sits at the bottom where your pieces
+// visually are).
+export function UnionPanel({ unions, sideToMove, orientation = 'white' }) {
+  const bottomSide = orientation
+  const topSide = orientation === 'white' ? 'black' : 'white'
+
   return (
     <div className="union-panel">
       <h2 className="union-panel-heading">THE UNIONS</h2>
       <UnionCard
-        side="black"
-        sideLabel="Black"
-        isToMove={sideToMove === 'black'}
-        unions={unions.black}
+        side={topSide}
+        sideLabel={SIDE_LABELS[topSide]}
+        isToMove={sideToMove === topSide}
+        unions={unions[topSide]}
       />
       <UnionCard
-        side="white"
-        sideLabel="White"
-        isToMove={sideToMove === 'white'}
-        unions={unions.white}
+        side={bottomSide}
+        sideLabel={SIDE_LABELS[bottomSide]}
+        isToMove={sideToMove === bottomSide}
+        unions={unions[bottomSide]}
       />
       <p className="union-panel-explainer">
         Lose a piece without an immediate recapture and its union files a

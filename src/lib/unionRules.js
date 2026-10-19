@@ -1,24 +1,41 @@
 import { RULES_CONFIG } from './rulesConfig'
 
-// Which chess.js piece letter belongs to which union. Only piece types with
-// a grievance-based strike go here; rooks (P1) break for a different reason
-// (4 consecutive moves by the same rook) and aren't tracked by grievance.
+const FILES = 'abcdefgh'
+
+// Which chess.js piece letter belongs to which grievance-based union
+// (unpaid loss -> strike -> cooldown, same mechanic for both). Rooks break
+// for a different reason entirely (4 consecutive moves by the same rook)
+// and aren't tracked by grievance, so they're deliberately left out.
 const PIECE_TO_UNION = {
   p: 'pawns',
+  b: 'bishops',
 }
 
-function createPawnUnion() {
+const GRIEVANCE_UNIONS = ['pawns', 'bishops']
+
+function createGrievanceUnion() {
   return {
     grievance: 0,
     status: 'calm', // 'calm' | 'grumbling' | 'strike' | 'cooldown'
     turnsLeft: 0, // meaning depends on status: turns left on strike, or in cooldown
-    pendingUnpaidLoss: false, // internal: did this side just lose a pawn, awaiting payment?
+    pendingUnpaidLoss: false, // internal: did this side just lose a piece, awaiting payment?
+  }
+}
+
+function createRookUnion() {
+  return {
+    consecutiveMoves: 0,
+    trackedSquare: null, // internal: square the streaking rook is currently on
+    status: 'calm', // 'calm' | 'grumbling' | 'strike' (no cooldown for rooks)
+    turnsLeft: 0,
   }
 }
 
 function createSideUnions() {
   return {
-    pawns: createPawnUnion(),
+    pawns: createGrievanceUnion(),
+    bishops: createGrievanceUnion(),
+    rooks: createRookUnion(),
   }
 }
 
@@ -33,38 +50,64 @@ function otherSide(side) {
   return side === 'white' ? 'black' : 'white'
 }
 
-function isMoveBlockedByUnion(move, sideUnions) {
-  const union = PIECE_TO_UNION[move.piece]
-  if (!union) return false
-  return sideUnions[union].status === 'strike'
+// How many squares a move crosses, for the bishop work-to-rule range check.
+// Diagonal moves always have an equal file/rank delta, so either works.
+function squareDistance(from, to) {
+  const fileDelta = Math.abs(FILES.indexOf(from[0]) - FILES.indexOf(to[0]))
+  const rankDelta = Math.abs(Number(from[1]) - Number(to[1]))
+  return Math.max(fileDelta, rankDelta)
 }
 
-// Strike-break: the union that was blocking every move returns to work
-// immediately, in cooldown, with its grievance cleared.
+function isMoveBlockedByUnion(move, sideUnions) {
+  if (move.piece === 'p') {
+    return sideUnions.pawns.status === 'strike'
+  }
+  if (move.piece === 'b') {
+    return (
+      sideUnions.bishops.status === 'strike' &&
+      squareDistance(move.from, move.to) > RULES_CONFIG.bishops.maxSquares
+    )
+  }
+  if (move.piece === 'r') {
+    return sideUnions.rooks.status === 'strike'
+  }
+  return false
+}
+
+// Strike-break: every union currently blocking a move returns to work
+// immediately (grievance-based unions go into cooldown with grievance
+// cleared; rooks, which have no cooldown, go straight back to calm).
 function breakStrike(sideUnions, side) {
-  if (sideUnions.pawns.status === 'strike') {
-    return {
-      sideUnions: {
-        ...sideUnions,
-        pawns: {
+  let next = sideUnions
+  const news = []
+
+  for (const unionKey of GRIEVANCE_UNIONS) {
+    if (next[unionKey].status === 'strike') {
+      next = {
+        ...next,
+        [unionKey]: {
           grievance: 0,
           status: 'cooldown',
-          turnsLeft: RULES_CONFIG.pawns.cooldownDuration,
+          turnsLeft: RULES_CONFIG[unionKey].cooldownDuration,
           pendingUnpaidLoss: false,
         },
-      },
-      news: [{ type: 'strike-break', side, union: 'pawns' }],
+      }
+      news.push({ type: 'strike-break', side, union: unionKey })
     }
   }
-  // Nothing was actually on strike (shouldn't happen while only pawns can
-  // block moves outright), so there is nothing to break.
-  return { sideUnions, news: [] }
+
+  if (next.rooks.status === 'strike') {
+    next = { ...next, rooks: createRookUnion() }
+    news.push({ type: 'strike-break', side, union: 'rooks' })
+  }
+
+  return { sideUnions: next, news }
 }
 
 // Returns the legal moves for the side to move, filtered by union status.
 // If the filter would leave the side with no moves at all, but chess.js
-// still has legal moves, the blocking union breaks its strike and the full
-// move list is returned instead (see PRD "strike-break").
+// still has legal moves, the blocking union(s) break their strike and the
+// full move list is returned instead (see PRD "strike-break").
 export function legalMoves(chess, unions) {
   const side = chess.turn() === 'w' ? 'white' : 'black'
   const allMoves = chess.moves({ verbose: true })
@@ -94,57 +137,58 @@ export function legalMoves(chess, unions) {
 // last move: paid off by an immediate recapture, otherwise it becomes a
 // grievance (unless the union is already on strike or cooling down, where
 // grievance is frozen).
-function resolvePawnDebt(sideUnions, side, isCapture, news) {
-  const pawns = sideUnions.pawns
-  if (!pawns.pendingUnpaidLoss) return sideUnions
+function resolveDebt(sideUnions, unionKey, side, isCapture, news) {
+  const union = sideUnions[unionKey]
+  if (!union.pendingUnpaidLoss) return sideUnions
 
-  if (isCapture || (pawns.status !== 'calm' && pawns.status !== 'grumbling')) {
-    return { ...sideUnions, pawns: { ...pawns, pendingUnpaidLoss: false } }
+  if (isCapture || (union.status !== 'calm' && union.status !== 'grumbling')) {
+    return { ...sideUnions, [unionKey]: { ...union, pendingUnpaidLoss: false } }
   }
 
-  const grievance = pawns.grievance + 1
-  news.push({ type: 'grievance-filed', side, union: 'pawns', grievance })
-  return { ...sideUnions, pawns: { ...pawns, grievance, pendingUnpaidLoss: false } }
+  const grievance = union.grievance + 1
+  news.push({ type: 'grievance-filed', side, union: unionKey, grievance })
+  return { ...sideUnions, [unionKey]: { ...union, grievance, pendingUnpaidLoss: false } }
 }
 
 // Every capture a side makes lowers all of its own grievance counters by 1.
-function coolOffFromCapture(sideUnions, side, news) {
-  const pawns = sideUnions.pawns
-  if (pawns.grievance <= 0) return sideUnions
-  const grievance = pawns.grievance - 1
-  news.push({ type: 'capture-calms', side, union: 'pawns', grievance })
-  return { ...sideUnions, pawns: { ...pawns, grievance } }
+function coolOffFromCapture(sideUnions, unionKey, side, news) {
+  const union = sideUnions[unionKey]
+  if (union.grievance <= 0) return sideUnions
+  const grievance = union.grievance - 1
+  news.push({ type: 'capture-calms', side, union: unionKey, grievance })
+  return { ...sideUnions, [unionKey]: { ...union, grievance } }
 }
 
 // One of the mover's own turns has now passed under the union's current
 // status: tick a strike or cooldown counter down, ending it if it reaches 0.
-function tickPawnTimer(sideUnions, side, news) {
-  const pawns = sideUnions.pawns
+function tickTimer(sideUnions, unionKey, side, news) {
+  const union = sideUnions[unionKey]
+  const config = RULES_CONFIG[unionKey]
 
-  if (pawns.status === 'strike') {
-    const turnsLeft = pawns.turnsLeft - 1
+  if (union.status === 'strike') {
+    const turnsLeft = union.turnsLeft - 1
     if (turnsLeft <= 0) {
-      news.push({ type: 'strike-ends', side, union: 'pawns' })
+      news.push({ type: 'strike-ends', side, union: unionKey })
       return {
         ...sideUnions,
-        pawns: {
+        [unionKey]: {
           grievance: 0,
           status: 'cooldown',
-          turnsLeft: RULES_CONFIG.pawns.cooldownDuration,
+          turnsLeft: config.cooldownDuration,
           pendingUnpaidLoss: false,
         },
       }
     }
-    return { ...sideUnions, pawns: { ...pawns, turnsLeft } }
+    return { ...sideUnions, [unionKey]: { ...union, turnsLeft } }
   }
 
-  if (pawns.status === 'cooldown') {
-    const turnsLeft = pawns.turnsLeft - 1
+  if (union.status === 'cooldown') {
+    const turnsLeft = union.turnsLeft - 1
     if (turnsLeft <= 0) {
-      news.push({ type: 'cooldown', side, union: 'pawns' })
-      return { ...sideUnions, pawns: { ...pawns, status: 'calm', turnsLeft: 0 } }
+      news.push({ type: 'cooldown', side, union: unionKey })
+      return { ...sideUnions, [unionKey]: { ...union, status: 'calm', turnsLeft: 0 } }
     }
-    return { ...sideUnions, pawns: { ...pawns, turnsLeft } }
+    return { ...sideUnions, [unionKey]: { ...union, turnsLeft } }
   }
 
   return sideUnions
@@ -152,22 +196,72 @@ function tickPawnTimer(sideUnions, side, news) {
 
 // If grievance just crossed the strike threshold, start the strike.
 // Otherwise keep the calm/grumbling status in sync with the grievance count.
-function maybeStartStrike(sideUnions, side, news) {
-  const pawns = sideUnions.pawns
-  if (pawns.status !== 'calm' && pawns.status !== 'grumbling') return sideUnions
+function maybeStartStrike(sideUnions, unionKey, side, news) {
+  const union = sideUnions[unionKey]
+  if (union.status !== 'calm' && union.status !== 'grumbling') return sideUnions
 
-  if (pawns.grievance >= RULES_CONFIG.pawns.unpaidLossLimit) {
-    news.push({ type: 'strike', side, union: 'pawns' })
+  if (union.grievance >= RULES_CONFIG[unionKey].unpaidLossLimit) {
+    news.push({ type: 'strike', side, union: unionKey })
     return {
       ...sideUnions,
-      pawns: { ...pawns, status: 'strike', turnsLeft: RULES_CONFIG.pawns.strikeDuration },
+      [unionKey]: { ...union, status: 'strike', turnsLeft: RULES_CONFIG[unionKey].strikeDuration },
     }
   }
 
-  const nextStatus = pawns.grievance > 0 ? 'grumbling' : 'calm'
-  if (nextStatus === pawns.status) return sideUnions
-  if (nextStatus === 'grumbling') news.push({ type: 'grumbling', side, union: 'pawns' })
-  return { ...sideUnions, pawns: { ...pawns, status: nextStatus } }
+  const nextStatus = union.grievance > 0 ? 'grumbling' : 'calm'
+  if (nextStatus === union.status) return sideUnions
+  if (nextStatus === 'grumbling') news.push({ type: 'grumbling', side, union: unionKey })
+  return { ...sideUnions, [unionKey]: { ...union, status: nextStatus } }
+}
+
+// Rooks: sitting out ticks down the same way a grievance union's strike
+// does, but there's no cooldown afterwards — straight back to calm with the
+// streak cleared.
+function tickRookTimer(sideUnions, side, news) {
+  const rooks = sideUnions.rooks
+  if (rooks.status !== 'strike') return sideUnions
+
+  const turnsLeft = rooks.turnsLeft - 1
+  if (turnsLeft <= 0) {
+    news.push({ type: 'strike-ends', side, union: 'rooks' })
+    return { ...sideUnions, rooks: createRookUnion() }
+  }
+  return { ...sideUnions, rooks: { ...rooks, turnsLeft } }
+}
+
+// Tracks whether the piece that just moved was the same rook moving again
+// (the streak continues), a different rook (a new streak starts), or
+// anything else (the streak resets to 0). Frozen while the union is
+// already sitting out or its sit-out was just ticked to an end above.
+function updateRookStreak(sideUnions, side, result, news) {
+  const rooks = sideUnions.rooks
+  if (rooks.status !== 'calm' && rooks.status !== 'grumbling') return sideUnions
+
+  const isRookMove = result.piece === 'r'
+  if (!isRookMove) {
+    if (rooks.consecutiveMoves === 0) return sideUnions
+    return { ...sideUnions, rooks: { ...rooks, consecutiveMoves: 0, trackedSquare: null, status: 'calm' } }
+  }
+
+  const continuesStreak = result.from === rooks.trackedSquare
+  const consecutiveMoves = continuesStreak ? rooks.consecutiveMoves + 1 : 1
+
+  if (consecutiveMoves >= RULES_CONFIG.rooks.consecutiveMovesLimit) {
+    news.push({ type: 'strike', side, union: 'rooks' })
+    return {
+      ...sideUnions,
+      rooks: {
+        consecutiveMoves,
+        trackedSquare: result.to,
+        status: 'strike',
+        turnsLeft: RULES_CONFIG.rooks.sitOutDuration,
+      },
+    }
+  }
+
+  const nextStatus = 'grumbling'
+  if (nextStatus !== rooks.status) news.push({ type: 'grumbling', side, union: 'rooks' })
+  return { ...sideUnions, rooks: { consecutiveMoves, trackedSquare: result.to, status: nextStatus, turnsLeft: 0 } }
 }
 
 // Applies a move to the chess.js game (mutating it, same as chess.js itself)
@@ -185,19 +279,24 @@ export function applyMove(state, move) {
   let moverUnions = unions[mover]
   let opponentUnions = unions[opponent]
 
-  moverUnions = resolvePawnDebt(moverUnions, mover, isCapture, news)
-  if (isCapture) {
-    moverUnions = coolOffFromCapture(moverUnions, mover, news)
+  for (const unionKey of GRIEVANCE_UNIONS) {
+    moverUnions = resolveDebt(moverUnions, unionKey, mover, isCapture, news)
+    if (isCapture) {
+      moverUnions = coolOffFromCapture(moverUnions, unionKey, mover, news)
+    }
+    moverUnions = tickTimer(moverUnions, unionKey, mover, news)
+    moverUnions = maybeStartStrike(moverUnions, unionKey, mover, news)
   }
-  moverUnions = tickPawnTimer(moverUnions, mover, news)
-  moverUnions = maybeStartStrike(moverUnions, mover, news)
+
+  moverUnions = tickRookTimer(moverUnions, mover, news)
+  moverUnions = updateRookStreak(moverUnions, mover, result, news)
 
   if (isCapture) {
-    const union = PIECE_TO_UNION[result.captured]
-    if (union) {
+    const unionKey = PIECE_TO_UNION[result.captured]
+    if (unionKey) {
       opponentUnions = {
         ...opponentUnions,
-        [union]: { ...opponentUnions[union], pendingUnpaidLoss: true },
+        [unionKey]: { ...opponentUnions[unionKey], pendingUnpaidLoss: true },
       }
     }
   }

@@ -11,6 +11,8 @@ import { Header } from './Header'
 import { GameOverCard } from './GameOverCard'
 import { statusText } from '../lib/statusText'
 import { pickBotMove } from '../lib/bot'
+import { getCapturedPieces } from '../lib/capturedPieces'
+import { CapturedTray } from './CapturedTray'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -256,10 +258,17 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     return styles
   }
 
+  const orientation = config?.side === 'black' ? 'black' : 'white'
+  const topSide = orientation === 'white' ? 'black' : 'white'
+  const bottomSide = orientation
+  const { byWhite, byBlack } = getCapturedPieces(chess)
+  const trayFor = (side) => (side === 'white' ? byWhite : byBlack)
+  const capturedColorFor = (side) => (side === 'white' ? 'black' : 'white')
+
   const chessboardOptions = {
     id: 'chess-union-board',
     position: game.fen,
-    boardOrientation: config?.side === 'black' ? 'black' : 'white',
+    boardOrientation: orientation,
     allowDragging: !isBotTurn,
     onPieceDrop,
     onSquareClick,
@@ -279,7 +288,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
 
       <div className="layout">
         <aside className="unions-column">
-          <UnionPanel unions={game.unions} sideToMove={sideToMove} />
+          <UnionPanel unions={game.unions} sideToMove={sideToMove} orientation={orientation} />
         </aside>
 
         <main className="board-column">
@@ -291,6 +300,10 @@ export function Game({ config, onReturnToStart, onShowRules }) {
               {sideLabel(botSide)} is thinking…
             </p>
           ) : null}
+
+          <div className="player-bar">
+            <CapturedTray capturedColor={capturedColorFor(topSide)} pieces={trayFor(topSide)} />
+          </div>
 
           <div className="board-wrap">
             {banner ? (
@@ -310,6 +323,10 @@ export function Game({ config, onReturnToStart, onShowRules }) {
               />
             ) : null}
             {blockedMessage ? <div className="blocked-toast">{blockedMessage}</div> : null}
+          </div>
+
+          <div className="player-bar">
+            <CapturedTray capturedColor={capturedColorFor(bottomSide)} pieces={trayFor(bottomSide)} />
           </div>
         </main>
 

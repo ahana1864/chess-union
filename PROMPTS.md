@@ -56,7 +56,7 @@ Rules for every step:
   `?demo=1` loads a fixed position with White to move and pawn grievance already at 2, where a natural-looking pawn push hangs a pawn so the third unpaid loss is one or two moves away. `?demo=2` loads a position where White is on strike and in check with only a striking pawn able to capture, to show strike-break. Make each sequence a Vitest test that replays the moves and asserts the result. Mention both in the README later.
   Done when: opening each URL always reproduces the described sequence.
 
-- [ ] **9. Bishop and rook unions, captured pieces** (F12, F14)
+- [x] **9. Bishop and rook unions, captured pieces** (F12, F14)
   Add the bishop work-to-rule (at most 2 squares for 3 turns after 2 unpaid bishop losses) and the rook union break (same rook 4 moves in a row, rooks sit out 1 turn) to the engine with tests first, then the UI (meters, chips, news, banners). Add captured-piece trays per side.
   Done when: tests pass and both unions show up correctly in the panel; if this runs long, cut the rook union first.
 

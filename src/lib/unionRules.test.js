@@ -12,10 +12,10 @@ function hasEvent(news, type) {
 function stateWithPawns(fen, overrides = {}) {
   const unions = createUnionState()
   if (overrides.white) {
-    unions.white = { pawns: { ...unions.white.pawns, ...overrides.white } }
+    unions.white = { ...unions.white, pawns: { ...unions.white.pawns, ...overrides.white } }
   }
   if (overrides.black) {
-    unions.black = { pawns: { ...unions.black.pawns, ...overrides.black } }
+    unions.black = { ...unions.black, pawns: { ...unions.black.pawns, ...overrides.black } }
   }
   return { chess: new Chess(fen), unions, news: [] }
 }
@@ -121,7 +121,10 @@ describe('strike-break', () => {
     // position is a pawn capturing the checking knight.
     const fen = 'k4r2/8/8/8/8/3n4/2q1P3/4K3 w - - 0 1'
     const unions = createUnionState()
-    unions.white = { pawns: { ...unions.white.pawns, grievance: 3, status: 'strike', turnsLeft: 2 } }
+    unions.white = {
+      ...unions.white,
+      pawns: { ...unions.white.pawns, grievance: 3, status: 'strike', turnsLeft: 2 },
+    }
 
     const result = legalMoves(new Chess(fen), unions)
 
@@ -139,7 +142,10 @@ describe('move filtering during a strike', () => {
     // promoting, plus a knight move that is unaffected by the strike.
     const fen = '7k/P7/8/3pP3/8/8/8/K5N1 w - d6 0 1'
     const unions = createUnionState()
-    unions.white = { pawns: { ...unions.white.pawns, grievance: 3, status: 'strike', turnsLeft: 2 } }
+    unions.white = {
+      ...unions.white,
+      pawns: { ...unions.white.pawns, grievance: 3, status: 'strike', turnsLeft: 2 },
+    }
 
     const result = legalMoves(new Chess(fen), unions)
 
@@ -149,6 +155,103 @@ describe('move filtering during a strike', () => {
     expect(sans).toContain('Nf3')
     // No strike-break: the knight move keeps the filtered list non-empty.
     expect(result.unions.white.pawns.status).toBe('strike')
+  })
+})
+
+describe('bishop work-to-rule', () => {
+  it('starts working to rule after 2 unpaid bishop losses', () => {
+    const unions = createUnionState()
+    unions.white = {
+      ...unions.white,
+      bishops: { ...unions.white.bishops, grievance: 1, status: 'grumbling', pendingUnpaidLoss: true },
+    }
+    const chess = new Chess('k7/8/8/8/8/8/8/K5N1 w - - 0 1')
+
+    const next = applyMove({ chess, unions, news: [] }, 'Nf3')
+
+    expect(next.unions.white.bishops).toEqual({
+      grievance: 2,
+      status: 'strike',
+      turnsLeft: 3,
+      pendingUnpaidLoss: false,
+    })
+    expect(hasEvent(next.news, 'strike')).toBe(true)
+  })
+
+  it('limits bishop moves to at most 2 squares while working to rule, leaving other pieces alone', () => {
+    const fen = 'k7/8/8/8/8/8/8/K1B5 w - - 0 1'
+    const unions = createUnionState()
+    unions.white = {
+      ...unions.white,
+      bishops: { ...unions.white.bishops, grievance: 2, status: 'strike', turnsLeft: 2 },
+    }
+
+    const result = legalMoves(new Chess(fen), unions)
+
+    const sans = result.moves.map((move) => move.san)
+    expect(sans).toContain('Be3') // 2 squares away: allowed
+    expect(sans).not.toContain('Bf4') // 3 squares away: blocked
+    expect(sans).not.toContain('Bh6') // 5 squares away: blocked
+    expect(sans).toContain('Ka2') // king moves are never affected
+  })
+})
+
+describe('rook union break', () => {
+  function playRookShuffle(moveCount) {
+    let state = {
+      chess: new Chess('6kn/8/8/8/8/8/8/R3K3 w - - 0 1'),
+      unions: createUnionState(),
+      news: [],
+    }
+    const whiteMoves = ['Ra2', 'Ra1', 'Ra2', 'Ra1']
+    const blackMoves = ['Nf7', 'Nh8', 'Nf7', 'Nh8']
+    for (let i = 0; i < moveCount; i++) {
+      state = applyMove(state, whiteMoves[i])
+      if (i < moveCount - 1) state = applyMove(state, blackMoves[i])
+    }
+    return state
+  }
+
+  it('sits out for 1 turn after the same rook moves 4 times in a row', () => {
+    const state = playRookShuffle(4)
+
+    expect(state.unions.white.rooks).toEqual({
+      consecutiveMoves: 4,
+      trackedSquare: 'a1',
+      status: 'strike',
+      turnsLeft: 1,
+    })
+    expect(hasEvent(state.news, 'strike')).toBe(true)
+  })
+
+  it('resets the streak when a different piece moves instead', () => {
+    let state = playRookShuffle(2) // Ra2, Nf7, Ra1 -> consecutiveMoves 2, black to move
+    state = applyMove(state, 'Nh8') // black replies
+    state = applyMove(state, 'Kd2') // king moves instead of the rook
+
+    expect(state.unions.white.rooks.consecutiveMoves).toBe(0)
+    expect(state.unions.white.rooks.status).toBe('calm')
+  })
+
+  it('blocks rook moves while sitting out, but not other pieces, and returns to calm (no cooldown) after 1 turn', () => {
+    const struckState = playRookShuffle(4)
+
+    const filtered = legalMoves(struckState.chess, struckState.unions)
+    const sans = filtered.moves.map((move) => move.san)
+    expect(sans.some((san) => san.startsWith('R'))).toBe(false)
+    expect(sans.length).toBeGreaterThan(0) // the king can still move
+
+    // Black replies, then white's next move is the rook union's 1 sit-out turn.
+    let state = applyMove(struckState, 'Nh8')
+    state = applyMove(state, 'Kd2')
+
+    expect(state.unions.white.rooks).toEqual({
+      consecutiveMoves: 0,
+      trackedSquare: null,
+      status: 'calm', // not 'cooldown' -- rooks skip it entirely
+      turnsLeft: 0,
+    })
+    expect(hasEvent(state.news, 'strike-ends')).toBe(true)
   })
 })
 

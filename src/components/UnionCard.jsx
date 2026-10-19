@@ -13,15 +13,26 @@ const STATUS_LABELS = {
   cooldown: 'Cooldown',
 }
 
-function noteFor(data, limit) {
-  if (data.status === 'strike') return `Back at work in ${data.turnsLeft} turns`
+// Rooks track consecutive moves rather than grievance, and their "strike"
+// is a 1-turn sit-out with no cooldown; bishops' "strike" is a work-to-rule
+// range limit rather than a full stop. Notes read accordingly.
+function noteFor(unionKey, data, limit) {
+  if (data.status === 'strike') {
+    if (unionKey === 'bishops') {
+      return `Max ${RULES_CONFIG.bishops.maxSquares} squares for ${data.turnsLeft} turns`
+    }
+    return `Back at work in ${data.turnsLeft} turns`
+  }
   if (data.status === 'cooldown') return `Cooling off for ${data.turnsLeft} turns`
+  if (unionKey === 'rooks') return `${data.consecutiveMoves} of ${limit} moves in a row`
   return `${data.grievance} of ${limit} unpaid losses`
 }
 
 function UnionRow({ unionKey, data }) {
-  const limit = RULES_CONFIG[unionKey].unpaidLossLimit
+  const config = RULES_CONFIG[unionKey]
+  const limit = unionKey === 'rooks' ? config.consecutiveMovesLimit : config.unpaidLossLimit
   const segments = limit
+  const count = unionKey === 'rooks' ? data.consecutiveMoves : data.grievance
   const fillColor =
     data.status === 'strike' ? 'var(--strike)' : data.status === 'grumbling' ? 'var(--warn)' : null
 
@@ -39,12 +50,12 @@ function UnionRow({ unionKey, data }) {
             key={i}
             className="union-meter-segment"
             style={{
-              backgroundColor: i < data.grievance && fillColor ? fillColor : 'var(--meter-empty)',
+              backgroundColor: i < count && fillColor ? fillColor : 'var(--meter-empty)',
             }}
           />
         ))}
       </div>
-      <p className="union-row-note">{noteFor(data, limit)}</p>
+      <p className="union-row-note">{noteFor(unionKey, data, limit)}</p>
     </div>
   )
 }

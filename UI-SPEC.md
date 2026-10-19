@@ -57,7 +57,7 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 - **Legal-move dot:** 24px circle (on 80px squares), `rgba(27,26,23,0.3)`, centred on empty target squares.
 - **Capture ring:** circle inset 4px with a 6px border `rgba(215,38,61,0.6)`.
 - **Last move:** both squares use the `-hl` colours. **Selected piece:** `--sq-selected`.
-- **Board size:** computed as `min(820px, 100dvh - 68px - 110px, 100vw - unions column - news column - 64px)` — a cap of 820px, header (68px) plus room for the status line and padding (110px), and the width left over after the two side columns and their gutters (64px). That's about 696px at 1440 × 900, about 536px at 1280 × 720, and about 420px at 1024 × 768 (where the side columns narrow to 260px/280px).
+- **Board size:** computed as `min(820px, 100dvh - 68px - 170px, 100vw - unions column - news column - 64px)` — a cap of 820px, header (68px) plus room for the status line, the player bars above and below the board, and padding (170px), and the width left over after the two side columns and their gutters (64px). That's about 662px at 1440 × 900, about 482px at 1280 × 720, and about 420px at 1024 × 768 (where the side columns narrow to 260px/280px, and the width term binds instead).
 - **Picket sign (on striking pawns):** a small cardboard placard on a stick in the top-right of the pawn's square, rotated 8°. Placard 30 × 20, `--cardboard`, 2px `--ink` border, two stripes inside (3px `--strike`, 3px `--ink`); stick 3 × 16, `--ink`. Decorative, so `aria-hidden="true"`.
 
 ## Header

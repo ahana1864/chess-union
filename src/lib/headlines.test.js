@@ -14,8 +14,22 @@ const EVENT_TYPES = [
 describe('headlineFor', () => {
   it('returns non-empty text for every union event type', () => {
     for (const type of EVENT_TYPES) {
-      const { text } = headlineFor({ type, side: 'white', union: 'pawns', grievance: 2 })
-      expect(text.length).toBeGreaterThan(0)
+      for (const union of ['pawns', 'bishops', 'rooks']) {
+        const { text } = headlineFor({ type, side: 'white', union, grievance: 2 })
+        expect(text.length).toBeGreaterThan(0)
+      }
+    }
+  })
+
+  it('gives bishops and rooks their own wording for strike/strike-ends/strike-break, not pawns’', () => {
+    for (const type of ['strike', 'strike-ends', 'strike-break']) {
+      const pawns = headlineFor({ type, side: 'white', union: 'pawns' })
+      const bishops = headlineFor({ type, side: 'white', union: 'bishops' })
+      const rooks = headlineFor({ type, side: 'white', union: 'rooks' })
+      expect(bishops.text).not.toBe(pawns.text)
+      expect(rooks.text).not.toBe(pawns.text)
+      expect(bishops.text.toLowerCase()).toContain('bishop')
+      expect(rooks.text.toLowerCase()).toContain('rook')
     }
   })
 
