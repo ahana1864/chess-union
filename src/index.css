@@ -143,10 +143,15 @@ body {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
+  /* Referenced by .board-wrap's width formula below, so the board grows
+     back into the space freed up when these columns narrow at the
+     compact-desktop breakpoint. */
+  --unions-width: 320px;
+  --news-width: 360px;
 }
 
 .unions-column {
-  flex: 0 0 320px;
+  flex: 0 0 var(--unions-width);
   padding: 20px;
   border-right: 2px solid var(--ink);
   display: flex;
@@ -169,7 +174,7 @@ body {
 }
 
 .news-column {
-  flex: 0 0 360px;
+  flex: 0 0 var(--news-width);
   padding: 20px;
   border-left: 2px solid var(--ink);
   display: flex;
@@ -179,11 +184,9 @@ body {
 }
 
 @media (min-width: 900px) and (max-width: 1199px) {
-  .unions-column {
-    flex-basis: 260px;
-  }
-  .news-column {
-    flex-basis: 280px;
+  .layout {
+    --unions-width: 260px;
+    --news-width: 280px;
   }
 }
 
@@ -203,8 +206,16 @@ body {
 
 .board-wrap {
   position: relative;
-  width: min(640px, calc(100dvh - 68px - 160px));
-  max-width: 100%;
+  width: min(
+    820px,
+    calc(100dvh - 68px - 110px),
+    calc(100vw - var(--unions-width) - var(--news-width) - 64px)
+  );
+  height: min(
+    820px,
+    calc(100dvh - 68px - 110px),
+    calc(100vw - var(--unions-width) - var(--news-width) - 64px)
+  );
   flex-shrink: 0;
 }
 
@@ -400,12 +411,17 @@ body {
 
 /* ---------- Picket signs on striking pawns ---------- */
 
+/* Sized as percentages of the pawn's own square (not fixed px) so it scales
+   with the board, and kept fully inside the square (no negative offsets) so
+   it doesn't get clipped on the h-file, where the square sits at the
+   board's own right edge. 28% wide matches the spec's 30:20 placard ratio
+   (~17.9% tall) plus the 3:16 stick below it. */
 .picket-sign {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 20px;
-  height: 24px;
+  top: 5%;
+  right: 5%;
+  width: 28%;
+  height: 32%;
   transform: rotate(8deg);
   pointer-events: none;
 }
@@ -414,8 +430,8 @@ body {
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: 3px;
-  height: 16px;
+  width: 10%;
+  height: 44%;
   background: var(--ink);
   transform: translateX(-50%);
 }
@@ -424,10 +440,10 @@ body {
   position: absolute;
   top: 0;
   left: 0;
-  width: 20px;
-  height: 13px;
+  width: 100%;
+  height: 56%;
   background: var(--cardboard);
-  border: 1.5px solid var(--ink);
+  border: 2px solid var(--ink);
   border-radius: 2px;
   display: flex;
   overflow: hidden;
