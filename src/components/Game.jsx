@@ -1,6 +1,6 @@
-import { Chess } from 'chess.js'
 import { Chessboard } from 'react-chessboard'
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import { useGame } from '../hooks/useGame'
 import { pieceRenderers } from './pieceRenderers'
 import { PromotionPicker } from './PromotionPicker'
 
@@ -23,15 +23,25 @@ function statusText(chess) {
   return chess.isCheck() ? `${toMove} to move — check!` : `${toMove} to move`
 }
 
-export function Game() {
-  const gameRef = useRef(new Chess())
-  const chess = gameRef.current
+// Temporary, step 3 only: a plain-text readout of union state so the rules
+// can be checked by hand before there's a real Union Panel (step 4).
+function pawnDebugText(sideLabel, pawns) {
+  const detail =
+    pawns.status === 'strike' || pawns.status === 'cooldown'
+      ? ` (${pawns.turnsLeft} turns left)`
+      : ''
+  return `${sideLabel} pawns: ${pawns.grievance} grievance, ${pawns.status}${detail}`
+}
 
-  const [fen, setFen] = useState(chess.fen())
+export function Game() {
+  const game = useGame()
+  const chess = game.chess
+
   const [lastMove, setLastMove] = useState(null)
   const [moveFrom, setMoveFrom] = useState('')
   const [moveOptions, setMoveOptions] = useState({})
   const [promotionMove, setPromotionMove] = useState(null)
+  const [blockedMessage, setBlockedMessage] = useState(null)
 
   function clearSelection() {
     setMoveFrom('')
@@ -39,11 +49,13 @@ export function Game() {
   }
 
   function getMoveOptions(square) {
-    const moves = chess.moves({ square, verbose: true })
+    const moves = game.currentMoves.filter((move) => move.from === square)
     if (moves.length === 0) {
       setMoveOptions({})
+      setBlockedMessage(game.describeBlockedSquare(square))
       return false
     }
+    setBlockedMessage(null)
     const options = {}
     for (const move of moves) {
       options[move.to] = Boolean(move.captured)
@@ -53,14 +65,12 @@ export function Game() {
   }
 
   function commitMove(moveArg) {
-    try {
-      const result = chess.move(moveArg)
-      setFen(chess.fen())
-      setLastMove({ from: result.from, to: result.to })
-      return true
-    } catch {
-      return false
+    const applied = game.makeMove(moveArg)
+    if (applied) {
+      setLastMove({ from: moveArg.from, to: moveArg.to })
+      setBlockedMessage(null)
     }
+    return applied
   }
 
   function onSquareClick({ square, piece }) {
@@ -77,9 +87,9 @@ export function Game() {
       return
     }
 
-    const candidates = chess
-      .moves({ square: moveFrom, verbose: true })
-      .filter((move) => move.to === square)
+    const candidates = game.currentMoves.filter(
+      (move) => move.from === moveFrom && move.to === square,
+    )
 
     if (candidates.length === 0) {
       if (piece) {
@@ -103,17 +113,18 @@ export function Game() {
   function onPieceDrop({ sourceSquare, targetSquare }) {
     if (!targetSquare) return false
 
-    const candidates = chess
-      .moves({ square: sourceSquare, verbose: true })
-      .filter((move) => move.to === targetSquare)
+    const candidates = game.currentMoves.filter(
+      (move) => move.from === sourceSquare && move.to === targetSquare,
+    )
 
-    if (candidates.length === 0) return false
+    if (candidates.length === 0) {
+      setBlockedMessage(game.describeBlockedSquare(sourceSquare))
+      return false
+    }
 
     if (candidates.some((move) => move.promotion)) {
       setPromotionMove({ sourceSquare, targetSquare, color: chess.turn() })
       clearSelection()
-      // Accept the drop visually; the move is only finalised once a
-      // promotion piece is chosen below.
       return true
     }
 
@@ -137,10 +148,10 @@ export function Game() {
   }
 
   function newGame() {
-    gameRef.current = new Chess()
-    setFen(gameRef.current.fen())
+    game.newGame()
     setLastMove(null)
     setPromotionMove(null)
+    setBlockedMessage(null)
     clearSelection()
   }
 
@@ -181,7 +192,7 @@ export function Game() {
 
   const chessboardOptions = {
     id: 'chess-union-board',
-    position: fen,
+    position: game.fen,
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
@@ -210,6 +221,14 @@ export function Game() {
           />
         ) : null}
       </div>
+
+      {blockedMessage ? <p className="blocked-message">{blockedMessage}</p> : null}
+
+      <p className="union-debug">
+        {pawnDebugText('White', game.unions.white.pawns)}
+        {' · '}
+        {pawnDebugText('Black', game.unions.black.pawns)}
+      </p>
 
       <button type="button" className="new-game-button" onClick={newGame}>
         New game

@@ -30,7 +30,7 @@ Rules for every step:
   Create `src/lib/rulesConfig.js` (all thresholds and durations as one exported object) and `src/lib/unionRules.js` as pure functions with no React: `createUnionState()`, `legalMoves(chess, unions)`, `applyMove(state, move)`, plus news events returned as data (event type and parameters, no text). Implement the Game design section of the PRD for the pawn union: unpaid loss detection, grievance up on unpaid pawn loss and down on any capture, strike at 3 for 3 of that side's turns, cooldown of 5 turns, strike-break when the filtered list is empty but chess.js still has legal moves. Write Vitest tests for: an unpaid loss, a paid loss (immediate recapture), grievance falling on capture, strike trigger and expiry, cooldown blocks a new strike, strike-break when in check, en passant and promotion blocked during a strike, fool's mate still ends correctly. No UI in this step.
   Done when: all tests pass and the test names read like the rules.
 
-- [ ] **3. Wire the rules into the game** (F2, F3)
+- [x] **3. Wire the rules into the game** (F2, F3)
   Create a `useGame` hook that holds the chess.js game, the union state and a snapshot stack for undo. Legal-move dots and drops come from `legalMoves` (filtered). A blocked pawn move shows a plain message and does not change the game. Add a temporary debug line showing each side's grievance and status.
   Done when: by hand you can sacrifice three pawns without capturing, see the strike start, fail to move a pawn, and see it end on schedule; strike-break works when you are in check.
 

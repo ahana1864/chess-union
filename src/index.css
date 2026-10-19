@@ -48,6 +48,19 @@ body {
   margin: 0;
 }
 
+.blocked-message {
+  margin: 0;
+  color: var(--strike-deep);
+  font-weight: 600;
+}
+
+.union-debug {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 13px;
+  font-family: monospace;
+}
+
 .board-wrap {
   position: relative;
   width: min(90vw, 480px);
