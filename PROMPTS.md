@@ -34,7 +34,7 @@ Rules for every step:
   Create a `useGame` hook that holds the chess.js game, the union state and a snapshot stack for undo. Legal-move dots and drops come from `legalMoves` (filtered). A blocked pawn move shows a plain message and does not change the game. Add a temporary debug line showing each side's grievance and status.
   Done when: by hand you can sacrifice three pawns without capturing, see the strike start, fail to move a pawn, and see it end on schedule; strike-break works when you are in check.
 
-- [ ] **4. Union panel, strike visuals, news** (F4, F5, F6)
+- [x] **4. Union panel, strike visuals, news** (F4, F5, F6)
   Build `UnionPanel` and `UnionCard` (meters and status chips per UI-SPEC), `StrikeBanner` ("PAWNS ON STRIKE" and "The King crosses the picket line"), picket signs on striking pawns, the blocked-move toast with a pawn shake, and `NewsFeed` with a headline function that turns events into text. Write at least three funny headline variants per event type (grievance filed, grumbling, strike, strike ends, cooldown, strike-break, capture calms things down) and choose deterministically so tests stay stable. Use an `aria-live="polite"` region for news. Match the "Desktop · pawns on strike" mockup.
   Done when: the strike screen looks like the mockup at 1440 × 900.
 

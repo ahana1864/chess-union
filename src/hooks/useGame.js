@@ -34,8 +34,17 @@ export function useGame() {
   // at all, then pushes everything into React state in one go.
   function settle(chess, nextUnions, nextNews) {
     const result = legalMoves(chess, nextUnions)
-    const finalUnions = result.news.length > 0 ? result.unions : nextUnions
-    const finalNews = result.news.length > 0 ? [...result.news, ...nextNews] : nextNews
+    let finalUnions = nextUnions
+    let finalNews = nextNews
+
+    if (result.news.length > 0) {
+      // A strike-break happens before the next move is played, so it's
+      // tagged with the move about to happen.
+      const moveNumber = chess.history().length + 1
+      const stamped = result.news.map((event) => ({ ...event, moveNumber }))
+      finalUnions = result.unions
+      finalNews = [...stamped, ...nextNews]
+    }
 
     setFen(chess.fen())
     setUnions(finalUnions)
@@ -73,8 +82,14 @@ export function useGame() {
 
     snapshotsRef.current.push({ fen: chess.fen(), unions })
 
+    const previousNewsCount = news.length
     const next = applyMove({ chess, unions, news }, moveArg)
-    settle(next.chess, next.unions, next.news)
+    const moveNumber = chess.history().length
+    const newCount = next.news.length - previousNewsCount
+    const stampedNews = next.news.map((event, index) =>
+      index < newCount ? { ...event, moveNumber } : event,
+    )
+    settle(next.chess, next.unions, stampedNews)
     return true
   }
 

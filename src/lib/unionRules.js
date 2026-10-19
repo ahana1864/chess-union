@@ -206,6 +206,9 @@ export function applyMove(state, move) {
     ...state,
     chess,
     unions: { ...unions, [mover]: moverUnions, [opponent]: opponentUnions },
-    news: [...news, ...state.news],
+    // Later-computed events (e.g. a strike starting) are more newsworthy
+    // than earlier ones from the same move (e.g. the grievance that caused
+    // it), so put them first within this move's batch.
+    news: [...news.slice().reverse(), ...state.news],
   }
 }

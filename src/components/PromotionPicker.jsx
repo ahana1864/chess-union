@@ -1,4 +1,4 @@
-import { pieceRenderers } from './pieceRenderers'
+import { PieceGlyph } from './PieceGlyph'
 
 const PROMOTION_PIECES = ['q', 'r', 'b', 'n']
 
@@ -8,20 +8,17 @@ export function PromotionPicker({ color, onSelect, onCancel }) {
   return (
     <div className="promotion-backdrop" onClick={onCancel}>
       <div className="promotion-picker" onClick={(e) => e.stopPropagation()}>
-        {PROMOTION_PIECES.map((piece) => {
-          const Renderer = pieceRenderers[`${color}${piece.toUpperCase()}`]
-          return (
-            <button
-              key={piece}
-              type="button"
-              className="promotion-choice"
-              aria-label={`Promote to ${piece}`}
-              onClick={() => onSelect(piece)}
-            >
-              <Renderer />
-            </button>
-          )
-        })}
+        {PROMOTION_PIECES.map((piece) => (
+          <button
+            key={piece}
+            type="button"
+            className="promotion-choice"
+            aria-label={`Promote to ${piece}`}
+            onClick={() => onSelect(piece)}
+          >
+            <PieceGlyph pieceType={piece} isWhite={color === 'w'} />
+          </button>
+        ))}
       </div>
     </div>
   )

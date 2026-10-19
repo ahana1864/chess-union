@@ -28,6 +28,10 @@
   --coord-on-dark: #efe6cf;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: var(--paper);
@@ -35,12 +39,50 @@ body {
   font-family: 'Barlow', system-ui, sans-serif;
 }
 
-.game {
+h1,
+h2,
+h3 {
+  font-family: 'Anton', sans-serif;
+  letter-spacing: 1px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ---------- Layout: Unions / board / news, three columns ---------- */
+
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.unions-column {
+  flex: 0 0 320px;
+  padding: 20px;
+  border-right: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.board-column {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 16px;
   padding: 24px;
+  min-width: 0;
+}
+
+.news-column {
+  flex: 0 0 360px;
+  padding: 20px;
+  border-left: 2px solid var(--ink);
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .game-status {
@@ -48,22 +90,9 @@ body {
   margin: 0;
 }
 
-.blocked-message {
-  margin: 0;
-  color: var(--strike-deep);
-  font-weight: 600;
-}
-
-.union-debug {
-  margin: 0;
-  color: var(--ink-2);
-  font-size: 13px;
-  font-family: monospace;
-}
-
 .board-wrap {
   position: relative;
-  width: min(90vw, 480px);
+  width: min(80vw, 560px);
 }
 
 .new-game-button {
@@ -76,6 +105,8 @@ body {
   font: 700 15px 'Barlow', sans-serif;
   cursor: pointer;
 }
+
+/* ---------- Promotion picker ---------- */
 
 .promotion-backdrop {
   position: absolute;
@@ -95,6 +126,7 @@ body {
   border: 2px solid var(--ink);
   border-radius: 10px;
   box-shadow: 0 3px 0 var(--ink);
+  z-index: 11;
 }
 
 .promotion-choice {
@@ -109,4 +141,380 @@ body {
 
 .promotion-choice:hover {
   background: var(--sq-light-hl);
+}
+
+/* ---------- The Unions panel ---------- */
+
+.union-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.union-panel-heading {
+  font-size: 22px;
+}
+
+.union-card {
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.union-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.side-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  flex-shrink: 0;
+}
+
+.side-dot-white {
+  background: var(--panel);
+}
+
+.side-dot-black {
+  background: var(--ink);
+}
+
+.union-card-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.to-move-pill {
+  margin-left: auto;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 12px 'Barlow', sans-serif;
+  padding: 3px 10px;
+  border-radius: 999px;
+}
+
+.union-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.union-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.union-row-name {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.status-chip {
+  font: 700 12px 'Barlow', sans-serif;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.status-chip-calm {
+  background: var(--calm-bg);
+  color: var(--calm-fg);
+}
+
+.status-chip-grumbling {
+  background: var(--grum-bg);
+  color: var(--grum-fg);
+}
+
+.status-chip-strike {
+  background: var(--strike);
+  color: #fff;
+}
+
+.status-chip-cooldown {
+  background: var(--cool-bg);
+  color: var(--cool-fg);
+}
+
+.union-meter {
+  display: flex;
+  gap: 4px;
+}
+
+.union-meter-segment {
+  flex-grow: 1;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--meter-empty);
+}
+
+.union-row-note {
+  margin: 0;
+  font-size: 12px;
+  color: var(--ink-2);
+}
+
+.union-panel-explainer {
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+/* ---------- Picket signs on striking pawns ---------- */
+
+.picket-sign {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 24px;
+  transform: rotate(8deg);
+  pointer-events: none;
+}
+
+.picket-stick {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  height: 16px;
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+.picket-placard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 13px;
+  background: var(--cardboard);
+  border: 1.5px solid var(--ink);
+  border-radius: 2px;
+  display: flex;
+  overflow: hidden;
+}
+
+.picket-stripe {
+  flex: 1;
+}
+
+.picket-stripe-strike {
+  background: var(--strike);
+}
+
+.picket-stripe-ink {
+  background: var(--ink);
+}
+
+/* ---------- Strike banner ---------- */
+
+.strike-banner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  background: var(--strike);
+  color: #fff;
+  padding: 14px 22px;
+  border-radius: 0;
+  box-shadow: 0 3px 0 var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  animation: strike-banner-in 250ms ease-out;
+}
+
+.strike-banner-sign {
+  position: relative;
+  width: 64px;
+  height: 48px;
+  flex-shrink: 0;
+}
+
+.strike-banner-stick {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 4px;
+  height: 24px;
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+.strike-banner-placard {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 64px;
+  height: 42px;
+  background: var(--cardboard);
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  transform: rotate(-6deg);
+  display: flex;
+  overflow: hidden;
+}
+
+.strike-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.strike-banner-title {
+  margin: 0;
+  font-family: 'Anton', sans-serif;
+  font-size: 40px;
+  line-height: 1.05;
+  letter-spacing: 1.5px;
+}
+
+.strike-banner-detail {
+  margin: 0;
+  font: 500 15px 'Barlow', sans-serif;
+}
+
+@keyframes strike-banner-in {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* ---------- Blocked-move toast + pawn shake ---------- */
+
+.blocked-toast {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  font: 600 15px 'Barlow', sans-serif;
+  padding: 10px 18px;
+  border-radius: 10px;
+  z-index: 11;
+  white-space: nowrap;
+}
+
+.piece-shake {
+  animation: piece-shake 200ms;
+}
+
+@keyframes piece-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .piece-shake {
+    animation: none;
+  }
+  .strike-banner {
+    animation: none;
+  }
+}
+
+/* ---------- Union News ---------- */
+
+.news-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+}
+
+.news-feed-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.news-feed-heading h2 {
+  font-size: 22px;
+}
+
+.live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font: 700 12px 'Barlow', sans-serif;
+  color: var(--strike);
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--strike);
+}
+
+.news-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.news-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1.5px solid var(--meter-empty);
+  background: var(--panel);
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 500;
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
+}
+
+.news-item-warning {
+  background: var(--warn-tint);
+  border-color: var(--warn-line);
+  font-weight: 600;
+}
+
+.news-item-alert {
+  background: var(--strike-tint);
+  border-color: var(--strike);
+  font-weight: 700;
+}
+
+.news-tag {
+  flex-shrink: 0;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 12px 'Barlow', sans-serif;
+  padding: 1px 6px;
+  border-radius: 6px;
+}
+
+.news-empty {
+  color: var(--ink-2);
+  font-size: 14px;
 }

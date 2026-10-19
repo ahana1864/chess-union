@@ -1,10 +1,16 @@
 import { Chessboard } from 'react-chessboard'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useGame } from '../hooks/useGame'
-import { pieceRenderers } from './pieceRenderers'
+import { buildPieceRenderers } from './pieceRenderers'
 import { PromotionPicker } from './PromotionPicker'
+import { UnionPanel } from './UnionPanel'
+import { StrikeBanner } from './StrikeBanner'
+import { NewsFeed } from './NewsFeed'
 
 const FILES = 'abcdefgh'
+const BANNER_VISIBLE_MS = 2200
+const BLOCKED_MESSAGE_MS = 2200
+const SHAKE_MS = 250
 
 function isLightSquare(square) {
   const file = FILES.indexOf(square[0])
@@ -23,16 +29,6 @@ function statusText(chess) {
   return chess.isCheck() ? `${toMove} to move — check!` : `${toMove} to move`
 }
 
-// Temporary, step 3 only: a plain-text readout of union state so the rules
-// can be checked by hand before there's a real Union Panel (step 4).
-function pawnDebugText(sideLabel, pawns) {
-  const detail =
-    pawns.status === 'strike' || pawns.status === 'cooldown'
-      ? ` (${pawns.turnsLeft} turns left)`
-      : ''
-  return `${sideLabel} pawns: ${pawns.grievance} grievance, ${pawns.status}${detail}`
-}
-
 export function Game() {
   const game = useGame()
   const chess = game.chess
@@ -42,17 +38,61 @@ export function Game() {
   const [moveOptions, setMoveOptions] = useState({})
   const [promotionMove, setPromotionMove] = useState(null)
   const [blockedMessage, setBlockedMessage] = useState(null)
+  const [shakingSquare, setShakingSquare] = useState(null)
+  const [banner, setBanner] = useState(null)
+
+  const blockedTimeoutRef = useRef(null)
+  const shakeTimeoutRef = useRef(null)
+  const bannerTimeoutRef = useRef(null)
+  const lastBannerEventRef = useRef(null)
+
+  // Shows the strike / strike-break banner once per genuinely new event
+  // (news is newest-first, so we only act when that first event changes),
+  // then auto-dismisses it; the status chips and picket signs carry the
+  // rest of the strike.
+  useEffect(() => {
+    const latest = game.news[0]
+    if (!latest || latest === lastBannerEventRef.current) return
+    lastBannerEventRef.current = latest
+    if (latest.type !== 'strike' && latest.type !== 'strike-break') return
+
+    const turnsLeft = game.unions[latest.side]?.[latest.union]?.turnsLeft ?? 0
+    setBanner({ kind: latest.type, side: latest.side, union: latest.union, turnsLeft })
+
+    clearTimeout(bannerTimeoutRef.current)
+    bannerTimeoutRef.current = setTimeout(() => setBanner(null), BANNER_VISIBLE_MS)
+  }, [game.news, game.unions])
+
+  useEffect(
+    () => () => {
+      clearTimeout(blockedTimeoutRef.current)
+      clearTimeout(shakeTimeoutRef.current)
+      clearTimeout(bannerTimeoutRef.current)
+    },
+    [],
+  )
 
   function clearSelection() {
     setMoveFrom('')
     setMoveOptions({})
   }
 
+  function showBlocked(square, message) {
+    if (!message) return
+    setBlockedMessage(message)
+    setShakingSquare(square)
+
+    clearTimeout(blockedTimeoutRef.current)
+    blockedTimeoutRef.current = setTimeout(() => setBlockedMessage(null), BLOCKED_MESSAGE_MS)
+    clearTimeout(shakeTimeoutRef.current)
+    shakeTimeoutRef.current = setTimeout(() => setShakingSquare(null), SHAKE_MS)
+  }
+
   function getMoveOptions(square) {
     const moves = game.currentMoves.filter((move) => move.from === square)
     if (moves.length === 0) {
       setMoveOptions({})
-      setBlockedMessage(game.describeBlockedSquare(square))
+      showBlocked(square, game.describeBlockedSquare(square))
       return false
     }
     setBlockedMessage(null)
@@ -118,7 +158,7 @@ export function Game() {
     )
 
     if (candidates.length === 0) {
-      setBlockedMessage(game.describeBlockedSquare(sourceSquare))
+      showBlocked(sourceSquare, game.describeBlockedSquare(sourceSquare))
       return false
     }
 
@@ -152,6 +192,8 @@ export function Game() {
     setLastMove(null)
     setPromotionMove(null)
     setBlockedMessage(null)
+    setBanner(null)
+    lastBannerEventRef.current = null
     clearSelection()
   }
 
@@ -196,7 +238,7 @@ export function Game() {
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
-    pieces: pieceRenderers,
+    pieces: buildPieceRenderers(game.unions, shakingSquare),
     showNotation: true,
     darkSquareStyle: { backgroundColor: 'var(--sq-dark)' },
     lightSquareStyle: { backgroundColor: 'var(--sq-light)' },
@@ -205,34 +247,47 @@ export function Game() {
     boardStyle: { boxShadow: '0 0 0 3px var(--ink)' },
   }
 
+  const sideToMove = chess.turn() === 'w' ? 'white' : 'black'
+
   return (
-    <div className="game">
-      <p className="game-status" role="status">
-        {statusText(chess)}
-      </p>
+    <div className="layout">
+      <aside className="unions-column">
+        <UnionPanel unions={game.unions} sideToMove={sideToMove} />
+      </aside>
 
-      <div className="board-wrap">
-        <Chessboard options={chessboardOptions} />
-        {promotionMove ? (
-          <PromotionPicker
-            color={promotionMove.color}
-            onSelect={onPromotionSelect}
-            onCancel={onPromotionCancel}
-          />
-        ) : null}
-      </div>
+      <main className="board-column">
+        <p className="game-status" role="status">
+          {statusText(chess)}
+        </p>
 
-      {blockedMessage ? <p className="blocked-message">{blockedMessage}</p> : null}
+        <div className="board-wrap">
+          {banner ? (
+            <StrikeBanner
+              kind={banner.kind}
+              side={banner.side}
+              union={banner.union}
+              turnsLeft={banner.turnsLeft}
+            />
+          ) : null}
+          <Chessboard options={chessboardOptions} />
+          {promotionMove ? (
+            <PromotionPicker
+              color={promotionMove.color}
+              onSelect={onPromotionSelect}
+              onCancel={onPromotionCancel}
+            />
+          ) : null}
+          {blockedMessage ? <div className="blocked-toast">{blockedMessage}</div> : null}
+        </div>
 
-      <p className="union-debug">
-        {pawnDebugText('White', game.unions.white.pawns)}
-        {' · '}
-        {pawnDebugText('Black', game.unions.black.pawns)}
-      </p>
+        <button type="button" className="new-game-button" onClick={newGame}>
+          New game
+        </button>
+      </main>
 
-      <button type="button" className="new-game-button" onClick={newGame}>
-        New game
-      </button>
+      <aside className="news-column">
+        <NewsFeed news={game.news} />
+      </aside>
     </div>
   )
 }

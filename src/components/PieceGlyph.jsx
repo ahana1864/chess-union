@@ -1,6 +1,8 @@
 import { PIECE_GLYPHS } from '../lib/pieceGlyphs'
+import { PicketSign } from './PicketSign'
 
 const GLYPH_STYLE_BASE = {
+  position: 'relative',
   width: '100%',
   height: '100%',
   display: 'flex',
@@ -12,9 +14,10 @@ const GLYPH_STYLE_BASE = {
   userSelect: 'none',
 }
 
-export function PieceGlyph({ pieceType, isWhite }) {
+export function PieceGlyph({ pieceType, isWhite, onStrike = false, shake = false }) {
   return (
     <div
+      className={shake ? 'piece-shake' : undefined}
       style={
         isWhite
           ? {
@@ -26,6 +29,7 @@ export function PieceGlyph({ pieceType, isWhite }) {
       }
     >
       {PIECE_GLYPHS[pieceType]}
+      {onStrike ? <PicketSign /> : null}
     </div>
   )
 }
