@@ -1,7 +1,99 @@
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
+
+  --paper: #f6f1e7;
+  --panel: #fffdf8;
+  --ink: #1b1a17;
+  --ink-2: #5b5648;
+  --cardboard: #d9b27c;
+  --strike: #d7263d;
+  --strike-tint: #fbe0e3;
+  --strike-deep: #b3162b;
+  --warn: #f2b705;
+  --warn-tint: #fff6d6;
+  --warn-line: #e0b84a;
+  --calm-bg: #ddebdd;
+  --calm-fg: #1f4d2f;
+  --grum-bg: #fbe7a1;
+  --grum-fg: #5c4300;
+  --cool-bg: #dce4f2;
+  --cool-fg: #1e3a66;
+  --meter-empty: #e4dccb;
+  --sq-light: #efe6cf;
+  --sq-dark: #7a9a7e;
+  --sq-light-hl: #f4de86;
+  --sq-dark-hl: #c9c25a;
+  --sq-selected: #f2c94c;
+  --coord-on-light: #5e7a62;
+  --coord-on-dark: #efe6cf;
 }
 
 body {
   margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Barlow', system-ui, sans-serif;
+}
+
+.game {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+}
+
+.game-status {
+  font-weight: 600;
+  margin: 0;
+}
+
+.board-wrap {
+  position: relative;
+  width: min(90vw, 480px);
+}
+
+.new-game-button {
+  height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 15px 'Barlow', sans-serif;
+  cursor: pointer;
+}
+
+.promotion-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+}
+
+.promotion-picker {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  gap: 4px;
+  padding: 6px;
+  background: var(--panel);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  box-shadow: 0 3px 0 var(--ink);
+}
+
+.promotion-choice {
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px;
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.promotion-choice:hover {
+  background: var(--sq-light-hl);
 }

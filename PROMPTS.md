@@ -22,7 +22,7 @@ Rules for every step:
   Read ChessUnion-PRD.md and UI-SPEC.md. Create CLAUDE.md summarising: what the project is, the stack, the feature checklist F1 to F18 with priorities, the union rules (unpaid loss, grievance, strike, cooldown, strike-break, thresholds), the file layout, and these working rules. Scaffold Vite + React (JavaScript). Install chess.js, react-chessboard, vitest and oxlint. Add scripts `dev`, `build`, `lint`, `test`. Write a smoke test that plays a short legal game with chess.js and checks check and checkmate detection (fool's mate). Make the first git commit.
   Done when: `npm run build`, `npm run lint` and `npm test` all pass, `npm run dev` shows an empty page, and CLAUDE.md exists.
 
-- [ ] **1. Plain chess** (F1)
+- [x] **1. Plain chess** (F1)
   Build the board with react-chessboard: drag and drop plus click-to-move, legal-move dots, capture rings, last-move highlight, selected square, coordinates, and a promotion picker (the player must choose). Show check, checkmate, stalemate and draw states and a New game button. Render pieces as text glyphs in Noto Sans Symbols 2 per UI-SPEC (white pieces `--panel` with an ink stroke, black pieces ink), which also avoids a piece-licence question. Use the UI-SPEC board colours. No unions yet.
   Done when: two people can play a full legal game including castling, en passant, promotion and checkmate; layout does not need to be final.
 
