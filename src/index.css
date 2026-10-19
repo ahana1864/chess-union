@@ -193,6 +193,14 @@ body {
   flex-shrink: 0;
 }
 
+.bot-thinking {
+  margin: 0;
+  color: var(--ink-2);
+  font-size: 14px;
+  font-style: italic;
+  flex-shrink: 0;
+}
+
 .board-wrap {
   position: relative;
   width: min(640px, calc(100dvh - 68px - 160px));

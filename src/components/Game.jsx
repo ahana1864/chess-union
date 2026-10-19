@@ -10,11 +10,17 @@ import { MoveList } from './MoveList'
 import { Header } from './Header'
 import { GameOverCard } from './GameOverCard'
 import { statusText } from '../lib/statusText'
+import { pickBotMove } from '../lib/bot'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
 const BLOCKED_MESSAGE_MS = 2200
 const SHAKE_MS = 250
+const BOT_THINK_MS = 600
+
+function sideLabel(side) {
+  return side === 'white' ? 'White' : 'Black'
+}
 
 function isLightSquare(square) {
   const file = FILES.indexOf(square[0])
@@ -33,11 +39,46 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   const [blockedMessage, setBlockedMessage] = useState(null)
   const [shakingSquare, setShakingSquare] = useState(null)
   const [banner, setBanner] = useState(null)
+  const [botThinking, setBotThinking] = useState(false)
 
   const blockedTimeoutRef = useRef(null)
   const shakeTimeoutRef = useRef(null)
   const bannerTimeoutRef = useRef(null)
   const lastBannerEventRef = useRef(null)
+
+  // Vs bot: the bot plays whichever side the human didn't pick.
+  const botSide = config?.mode === 'vs-bot' ? (config.side === 'white' ? 'black' : 'white') : null
+  const sideToMove = chess.turn() === 'w' ? 'white' : 'black'
+  const isBotTurn = botSide !== null && botSide === sideToMove
+
+  // Plays the bot's move after a short "thinking" delay once it's the
+  // bot's turn. Reads game.currentMoves fresh each time this fires, so it
+  // always picks from the same union-filtered list the human plays from —
+  // the bot's own unions strike too, it just never sees a struck piece's
+  // move as an option.
+  useEffect(() => {
+    if (!isBotTurn || chess.isGameOver()) return
+
+    setBotThinking(true)
+    const timeout = setTimeout(() => {
+      const move = pickBotMove(chess, game.currentMoves, { mode: 'greedy' })
+      if (move) {
+        game.makeMove({ from: move.from, to: move.to, promotion: move.promotion })
+        setLastMove({ from: move.from, to: move.to })
+      }
+      setBotThinking(false)
+    }, BOT_THINK_MS)
+
+    return () => {
+      clearTimeout(timeout)
+      setBotThinking(false)
+    }
+    // `game` is a new object every render and `chess` is a stable ref, so
+    // listing them (as the linter suggests) would either restart this
+    // timer on every unrelated re-render or do nothing — game.fen and
+    // game.currentMoves are what actually need to trigger it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBotTurn, game.fen, game.currentMoves])
 
   // Shows the strike / strike-break banner once per genuinely new event
   // (news is newest-first, so we only act when that first event changes),
@@ -107,7 +148,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   }
 
   function onSquareClick({ square, piece }) {
-    if (promotionMove) return
+    if (promotionMove || isBotTurn) return
 
     if (!moveFrom) {
       if (!piece) return
@@ -144,7 +185,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   }
 
   function onPieceDrop({ sourceSquare, targetSquare }) {
-    if (!targetSquare) return false
+    if (!targetSquare || isBotTurn) return false
 
     const candidates = game.currentMoves.filter(
       (move) => move.from === sourceSquare && move.to === targetSquare,
@@ -219,6 +260,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     id: 'chess-union-board',
     position: game.fen,
     boardOrientation: config?.side === 'black' ? 'black' : 'white',
+    allowDragging: !isBotTurn,
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
@@ -230,8 +272,6 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     lightSquareNotationStyle: { color: 'var(--coord-on-light)' },
     boardStyle: { boxShadow: '0 0 0 3px var(--ink)' },
   }
-
-  const sideToMove = chess.turn() === 'w' ? 'white' : 'black'
 
   return (
     <div className="app-shell">
@@ -246,6 +286,11 @@ export function Game({ config, onReturnToStart, onShowRules }) {
           <p className="game-status" role="status">
             {statusText(chess)}
           </p>
+          {botThinking ? (
+            <p className="bot-thinking" role="status">
+              {sideLabel(botSide)} is thinking…
+            </p>
+          ) : null}
 
           <div className="board-wrap">
             {banner ? (

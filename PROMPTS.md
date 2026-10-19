@@ -48,7 +48,7 @@ Rules for every step:
 
 > **Checkpoint, about hour 13:** steps 0 to 6 are all of P0. If behind, stop adding scope and fix what is rough. Then continue.
 
-- [ ] **7. Bot opponent** (F11)
+- [x] **7. Bot opponent** (F11)
   `src/lib/bot.js`: pick from the filtered legal moves. Start with random; add a greedy mode that prefers captures by piece value and avoids hanging pieces. Inject the RNG so it is testable. The bot's unions strike too. Add a 600ms thinking delay with a "Black is thinking" indicator. Enable "Vs bot" on the Start screen.
   Done when: you can play a whole game against the bot and see it get a strike.
 

@@ -34,12 +34,10 @@ export function StartScreen({ onStart }) {
           </button>
           <button
             type="button"
-            className="choice-card choice-card-disabled"
-            disabled
-            title="Coming in a later step"
+            className={`choice-card ${mode === 'vs-bot' ? 'choice-card-selected' : ''}`}
+            onClick={() => setMode('vs-bot')}
           >
             Vs bot
-            <span className="choice-card-note">(soon)</span>
           </button>
         </div>
 
