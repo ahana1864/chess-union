@@ -6,6 +6,8 @@ import { PromotionPicker } from './PromotionPicker'
 import { UnionPanel } from './UnionPanel'
 import { StrikeBanner } from './StrikeBanner'
 import { NewsFeed } from './NewsFeed'
+import { MoveList } from './MoveList'
+import { Header } from './Header'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -250,44 +252,45 @@ export function Game() {
   const sideToMove = chess.turn() === 'w' ? 'white' : 'black'
 
   return (
-    <div className="layout">
-      <aside className="unions-column">
-        <UnionPanel unions={game.unions} sideToMove={sideToMove} />
-      </aside>
+    <div className="app-shell">
+      <Header onNewGame={newGame} />
 
-      <main className="board-column">
-        <p className="game-status" role="status">
-          {statusText(chess)}
-        </p>
+      <div className="layout">
+        <aside className="unions-column">
+          <UnionPanel unions={game.unions} sideToMove={sideToMove} />
+        </aside>
 
-        <div className="board-wrap">
-          {banner ? (
-            <StrikeBanner
-              kind={banner.kind}
-              side={banner.side}
-              union={banner.union}
-              turnsLeft={banner.turnsLeft}
-            />
-          ) : null}
-          <Chessboard options={chessboardOptions} />
-          {promotionMove ? (
-            <PromotionPicker
-              color={promotionMove.color}
-              onSelect={onPromotionSelect}
-              onCancel={onPromotionCancel}
-            />
-          ) : null}
-          {blockedMessage ? <div className="blocked-toast">{blockedMessage}</div> : null}
-        </div>
+        <main className="board-column">
+          <p className="game-status" role="status">
+            {statusText(chess)}
+          </p>
 
-        <button type="button" className="new-game-button" onClick={newGame}>
-          New game
-        </button>
-      </main>
+          <div className="board-wrap">
+            {banner ? (
+              <StrikeBanner
+                kind={banner.kind}
+                side={banner.side}
+                union={banner.union}
+                turnsLeft={banner.turnsLeft}
+              />
+            ) : null}
+            <Chessboard options={chessboardOptions} />
+            {promotionMove ? (
+              <PromotionPicker
+                color={promotionMove.color}
+                onSelect={onPromotionSelect}
+                onCancel={onPromotionCancel}
+              />
+            ) : null}
+            {blockedMessage ? <div className="blocked-toast">{blockedMessage}</div> : null}
+          </div>
+        </main>
 
-      <aside className="news-column">
-        <NewsFeed news={game.news} />
-      </aside>
+        <aside className="news-column">
+          <NewsFeed news={game.news} />
+          <MoveList history={chess.history()} />
+        </aside>
+      </div>
     </div>
   )
 }

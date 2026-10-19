@@ -48,11 +48,101 @@ h3 {
   text-transform: uppercase;
 }
 
-/* ---------- Layout: Unions / board / news, three columns ---------- */
+/* ---------- Page shell: header + three-column layout, no page scroll ---------- */
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow: hidden;
+}
+
+.app-shell {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---------- Header ---------- */
+
+.app-header {
+  flex: 0 0 68px;
+  height: 68px;
+  background: var(--panel);
+  border-bottom: 2px solid var(--ink);
+  padding: 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.logo-badge {
+  flex-shrink: 0;
+  width: 40px;
+  height: 40px;
+  background: var(--cardboard);
+  border: 2px solid var(--ink);
+  border-radius: 6px;
+  transform: rotate(-5deg);
+  display: grid;
+  place-items: center;
+  font-family: 'Noto Sans Symbols 2', serif;
+  font-size: 26px;
+}
+
+.header-titles {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.wordmark {
+  font-size: 34px;
+  line-height: 1;
+}
+
+.tagline {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink-2);
+  font-family: 'Barlow', sans-serif;
+  text-transform: none;
+}
+
+.header-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 12px;
+}
+
+.header-button {
+  height: 44px;
+  padding: 0 18px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font: 700 15px 'Barlow', sans-serif;
+  cursor: pointer;
+}
+
+.header-button-outline {
+  background: transparent;
+  color: var(--ink);
+}
+
+.header-button-solid {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* ---------- Three columns: Unions / board / news+moves ---------- */
 
 .layout {
+  flex: 1 1 auto;
+  min-height: 0;
   display: flex;
-  min-height: 100vh;
 }
 
 .unions-column {
@@ -63,6 +153,7 @@ h3 {
   flex-direction: column;
   gap: 14px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .board-column {
@@ -71,9 +162,10 @@ h3 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   padding: 24px;
   min-width: 0;
+  min-height: 0;
 }
 
 .news-column {
@@ -82,28 +174,58 @@ h3 {
   border-left: 2px solid var(--ink);
   display: flex;
   flex-direction: column;
+  gap: 14px;
   min-height: 0;
+}
+
+@media (min-width: 900px) and (max-width: 1199px) {
+  .unions-column {
+    flex-basis: 260px;
+  }
+  .news-column {
+    flex-basis: 280px;
+  }
 }
 
 .game-status {
   font-weight: 600;
   margin: 0;
+  flex-shrink: 0;
 }
 
 .board-wrap {
   position: relative;
-  width: min(80vw, 560px);
+  width: min(640px, calc(100dvh - 68px - 160px));
+  max-width: 100%;
+  flex-shrink: 0;
 }
 
-.new-game-button {
-  height: 44px;
-  padding: 0 18px;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
-  background: var(--ink);
-  color: var(--paper);
-  font: 700 15px 'Barlow', sans-serif;
-  cursor: pointer;
+/* ---------- Move list ---------- */
+
+.move-list {
+  flex-shrink: 0;
+  max-height: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.move-list-heading {
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+.move-grid {
+  display: grid;
+  grid-template-columns: 36px 1fr 1fr;
+  gap: 4px 8px;
+  font: 500 15px 'Barlow', sans-serif;
+  overflow-y: auto;
+}
+
+.move-number {
+  color: var(--ink-2);
 }
 
 /* ---------- Promotion picker ---------- */
@@ -438,6 +560,7 @@ h3 {
 /* ---------- Union News ---------- */
 
 .news-feed {
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   gap: 14px;
@@ -470,13 +593,14 @@ h3 {
 }
 
 .news-list {
+  flex: 1 1 auto;
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-height: 420px;
+  min-height: 0;
   overflow-y: auto;
 }
 

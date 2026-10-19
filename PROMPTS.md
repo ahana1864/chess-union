@@ -38,7 +38,7 @@ Rules for every step:
   Build `UnionPanel` and `UnionCard` (meters and status chips per UI-SPEC), `StrikeBanner` ("PAWNS ON STRIKE" and "The King crosses the picket line"), picket signs on striking pawns, the blocked-move toast with a pawn shake, and `NewsFeed` with a headline function that turns events into text. Write at least three funny headline variants per event type (grievance filed, grumbling, strike, strike ends, cooldown, strike-break, capture calms things down) and choose deterministically so tests stay stable. Use an `aria-live="polite"` region for news. Match the "Desktop · pawns on strike" mockup.
   Done when: the strike screen looks like the mockup at 1440 × 900.
 
-- [ ] **5. Desktop layout** (F8)
+- [x] **5. Desktop layout** (F8)
   Match the "Desktop · game in progress" and "Desktop · pawns on strike" mockups: header, then three columns (unions, board, news and moves), no page scroll, board size `min(640px, 100dvh - 68px - 160px)`. Compact desktop at 900 to 1199px as in UI-SPEC. Add the move list.
   Done when: at 1024 × 768, 1280 × 720 and 1440 × 900 nothing overflows or clips; report what each looks like.
 
