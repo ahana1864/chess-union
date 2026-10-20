@@ -66,7 +66,7 @@ Rules for every step:
 
 > **Checkpoint, about hour 19:** stop building features. Do steps 11 to 13 only.
 
-- [ ] **11. README and credits**
+- [x] **11. README and credits**
   README: a screenshot or GIF first, "What I changed" (the union rule layer, the UI, the news system, the bot; credit chess as the original and Lichess and Chess.com as inspiration only), how the rules work, the `?demo=1` and `?demo=2` links on localhost, how to run (`npm install`, `npm run dev`) and test, and licences (chess.js BSD-2-Clause, react-chessboard MIT, fonts and icon licences). Add a LICENSE file, an in-app credits line, and a page title.
   Done when: a stranger can clone, run and understand it from the README alone.
 

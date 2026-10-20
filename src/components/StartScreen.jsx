@@ -67,6 +67,18 @@ export function StartScreen({ onStart, onWatchDemo }) {
             Watch demo
           </button>
         ) : null}
+
+        <p className="credits-line">
+          Chess rules by{' '}
+          <a href="https://github.com/jhlywa/chess.js" target="_blank" rel="noreferrer">
+            chess.js
+          </a>
+          . Board by{' '}
+          <a href="https://github.com/Clariity/react-chessboard" target="_blank" rel="noreferrer">
+            react-chessboard
+          </a>
+          . Sounds synthesized in-browser.
+        </p>
       </div>
     </div>
   )

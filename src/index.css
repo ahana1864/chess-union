@@ -832,6 +832,16 @@ body {
   margin-top: 8px;
 }
 
+.credits-line {
+  margin: 4px 0 0;
+  font: 400 12px 'Barlow', sans-serif;
+  color: var(--ink-2);
+}
+
+.credits-line a {
+  color: var(--ink-2);
+}
+
 /* ---------- Modals: Rules and Game over ---------- */
 
 .modal-backdrop {
