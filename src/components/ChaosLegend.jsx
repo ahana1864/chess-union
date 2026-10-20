@@ -1,13 +1,17 @@
 // A single static legend for Chaos Mode's mood dots -- not a panel per
 // piece (that's explicitly out of scope), just one explainer card where
-// the union panel sits in classic mode.
-export function ChaosLegend() {
+// the union panel sits in classic mode. botSide, if playing vs bot, is
+// left out of the personality assignment (see ChaosGame.jsx), so the
+// legend says so rather than implying every piece on the board got one.
+export function ChaosLegend({ botSide = null }) {
   return (
     <div className="chaos-legend">
       <h2>CHAOS MODE</h2>
       <p>
-        Every piece got a random personality when the game started: lazy, hot-headed, loyal, jumpy
-        or dramatic. Each one rises and falls through fatigue, grievance and anger at its own pace.
+        {botSide
+          ? `Every one of your pieces got a random personality when the game started: lazy, hot-headed, loyal, jumpy or dramatic. The bot's pieces stay steady.`
+          : `Every piece got a random personality when the game started: lazy, hot-headed, loyal, jumpy or dramatic.`}{' '}
+        Each one rises and falls through fatigue, grievance and anger at its own pace.
       </p>
       <ul className="chaos-legend-list">
         <li>

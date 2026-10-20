@@ -12,6 +12,7 @@ import { statusText } from '../lib/statusText'
 import { getCapturedPieces } from '../lib/capturedPieces'
 import { CapturedTray } from './CapturedTray'
 import { useGlyphOffsets } from '../hooks/useGlyphOffsets'
+import { pickBotMove } from '../lib/bot'
 
 // Chaos Mode's equivalent of Game.jsx: same board-interaction shape
 // (click/drag, promotion, blocked-move toast), but wired to useChaosGame
@@ -23,6 +24,8 @@ const FILES = 'abcdefgh'
 const BLOCKED_MESSAGE_MS = 2200
 const SHAKE_MS = 250
 const REFUSAL_MS = 2200
+const BOT_THINK_MS = 600
+const BOT_RETRY_MS = 300
 
 function isLightSquare(square) {
   const file = FILES.indexOf(square[0])
@@ -30,8 +33,18 @@ function isLightSquare(square) {
   return (file + rank) % 2 === 1
 }
 
+function sideLabel(side) {
+  return side === 'white' ? 'White' : 'Black'
+}
+
 export function ChaosGame({ config, onReturnToStart, onShowRules }) {
-  const game = useChaosGame(config?.seed)
+  // Vs bot: the bot plays whichever side the human didn't pick, and -- per
+  // request -- doesn't get randomized personalities itself, only the
+  // human's side does. In two-player mode both sides are randomized.
+  const botSide = config?.mode === 'vs-bot' ? (config.side === 'white' ? 'black' : 'white') : null
+  const randomizeColors = botSide === 'white' ? ['b'] : botSide === 'black' ? ['w'] : ['w', 'b']
+
+  const game = useChaosGame(config?.seed, randomizeColors)
   const chess = game.chess
 
   const [lastMove, setLastMove] = useState(null)
@@ -41,12 +54,49 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
   const [blockedMessage, setBlockedMessage] = useState(null)
   const [shakingSquare, setShakingSquare] = useState(null)
   const [refusalSquare, setRefusalSquare] = useState(null)
+  const [botThinking, setBotThinking] = useState(false)
+  const [botRetryTick, setBotRetryTick] = useState(0)
 
   const blockedTimeoutRef = useRef(null)
   const shakeTimeoutRef = useRef(null)
   const refusalTimeoutRef = useRef(null)
+  const botTimeoutRef = useRef(null)
   const boardWrapRef = useRef(null)
   const glyphOffsets = useGlyphOffsets(boardWrapRef)
+
+  const sideToMove = chess.turn() === 'w' ? 'white' : 'black'
+  const isBotTurn = botSide !== null && botSide === sideToMove
+
+  // Plays the bot's move after a short "thinking" delay. Uses makeBotMove
+  // (not makeMove) so a furious piece refusing doesn't stall the bot: it
+  // automatically tries a different piece instead. In the rare case every
+  // legal mover refuses on the same attempt, applied comes back null and
+  // botRetryTick bumps to try again shortly -- game.fen/currentMoves alone
+  // wouldn't change from a refusal, so this effect needs its own nudge to
+  // re-fire.
+  useEffect(() => {
+    if (!isBotTurn || chess.isGameOver()) return
+
+    setBotThinking(true)
+    const timeout = setTimeout(() => {
+      const applied = game.makeBotMove((currentChess, moves) =>
+        pickBotMove(currentChess, moves, { mode: 'greedy' }),
+      )
+      if (applied) {
+        setLastMove({ from: applied.from, to: applied.to })
+        setBotThinking(false)
+      } else {
+        botTimeoutRef.current = setTimeout(() => setBotRetryTick((tick) => tick + 1), BOT_RETRY_MS)
+      }
+    }, BOT_THINK_MS)
+
+    return () => {
+      clearTimeout(timeout)
+      clearTimeout(botTimeoutRef.current)
+      setBotThinking(false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBotTurn, game.fen, game.currentMoves, botRetryTick])
 
   useEffect(() => {
     if (!game.refusal) return
@@ -64,6 +114,7 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
       clearTimeout(blockedTimeoutRef.current)
       clearTimeout(shakeTimeoutRef.current)
       clearTimeout(refusalTimeoutRef.current)
+      clearTimeout(botTimeoutRef.current)
     },
     [],
   )
@@ -110,7 +161,7 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
   }
 
   function onSquareClick({ square, piece }) {
-    if (promotionMove) return
+    if (promotionMove || isBotTurn) return
 
     if (!moveFrom) {
       if (!piece) return
@@ -147,7 +198,7 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
   }
 
   function onPieceDrop({ sourceSquare, targetSquare }) {
-    if (!targetSquare) return false
+    if (!targetSquare || isBotTurn) return false
 
     const candidates = game.currentMoves.filter(
       (move) => move.from === sourceSquare && move.to === targetSquare,
@@ -218,7 +269,7 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
     id: 'chess-union-chaos-board',
     position: game.fen,
     boardOrientation: orientation,
-    allowDragging: true,
+    allowDragging: !isBotTurn,
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
@@ -237,13 +288,18 @@ export function ChaosGame({ config, onReturnToStart, onShowRules }) {
 
       <div className="layout">
         <aside className="unions-column">
-          <ChaosLegend />
+          <ChaosLegend botSide={botSide} />
         </aside>
 
         <main className="board-column">
           <p className="game-status" role="status">
             {statusText(chess)}
           </p>
+          {botThinking ? (
+            <p className="bot-thinking" role="status">
+              {sideLabel(botSide)} is thinking…
+            </p>
+          ) : null}
 
           <div className="player-bar">
             <CapturedTray capturedColor={capturedColorFor(topSide)} pieces={trayFor(topSide)} />

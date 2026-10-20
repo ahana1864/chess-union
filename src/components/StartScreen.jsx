@@ -35,12 +35,10 @@ export function StartScreen({ onStart, onWatchDemo }) {
           </button>
           <button
             type="button"
-            className={`choice-card ${mode === 'vs-bot' ? 'choice-card-selected' : ''} ${chaos ? 'choice-card-disabled' : ''}`}
-            onClick={() => !chaos && setMode('vs-bot')}
-            disabled={chaos}
+            className={`choice-card ${mode === 'vs-bot' ? 'choice-card-selected' : ''}`}
+            onClick={() => setMode('vs-bot')}
           >
             Vs bot
-            {chaos ? <span className="choice-card-note">Not in Chaos Mode</span> : null}
           </button>
         </div>
 
@@ -61,11 +59,7 @@ export function StartScreen({ onStart, onWatchDemo }) {
           type="button"
           className={`choice-card choice-card-chaos ${chaos ? 'choice-card-selected' : ''}`}
           aria-pressed={chaos}
-          onClick={() => {
-            const next = !chaos
-            setChaos(next)
-            if (next) setMode('two-players')
-          }}
+          onClick={() => setChaos((value) => !value)}
         >
           Chaos Mode
           <span className="choice-card-note">

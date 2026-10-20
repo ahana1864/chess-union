@@ -31,6 +31,45 @@ describe('seeded personalities', () => {
     expect(personalitiesOf(a)).not.toEqual(personalitiesOf(b))
   })
 
+  it('gives only the requested colors a random personality, leaving the rest steady', () => {
+    const state = createChaosState(new Chess(), 42, ['w'])
+    for (const piece of Object.values(state.piecesById)) {
+      if (piece.color === 'w') expect(piece.personality).not.toBe('steady')
+      else expect(piece.personality).toBe('steady')
+    }
+  })
+
+  it('never changes a steady piece: no fatigue, grievance, anger, sleeping, striking or rebel', () => {
+    // White is left steady; black still gets full chaos. Shuffle a white
+    // knight back and forth (would sleep it if randomized) and sacrifice
+    // white pawns unpaid (would raise grievance/anger if randomized).
+    const chess = new Chess('k7/8/8/4p3/3N4/8/8/K5N1 w - - 0 1')
+    let chaos = createChaosState(chess, 3, ['b'])
+    const whiteKnightId = Object.keys(chaos.piecesById).find(
+      (id) => chaos.piecesById[id].type === 'n' && chaos.piecesById[id].square === 'g1',
+    )
+
+    const seq = ['Nf3', 'exd4', 'Ng1', 'Ka2', 'Nf3', 'Ka1', 'Ng1', 'Ka2']
+    for (const san of seq) {
+      const { moves } = chaosLegalMoves(chess, chaos)
+      if (!moves.some((m) => m.san === san || m.san.replace(/[+#]$/, '') === san)) continue
+      const next = applyChaosMove({ chess, chaos, news: [] }, san)
+      chaos = next.chaos
+    }
+
+    const steadyKnight = chaos.piecesById[whiteKnightId]
+    expect(steadyKnight.personality).toBe('steady')
+    expect(steadyKnight.status).toBe('calm')
+    expect(steadyKnight.fatigue).toBe(0)
+    for (const piece of Object.values(chaos.piecesById)) {
+      if (piece.color === 'w') {
+        expect(piece.status).toBe('calm')
+        expect(piece.grievance).toBe(0)
+        expect(piece.anger).toBe(0)
+      }
+    }
+  })
+
   it('creates all 32 starting pieces, each with calm status and zeroed stats', () => {
     const state = createChaosState(new Chess(), 7)
     const pieces = Object.values(state.piecesById)

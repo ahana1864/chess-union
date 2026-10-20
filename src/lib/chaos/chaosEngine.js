@@ -49,10 +49,20 @@ function createPiece(id, cell, personality) {
   }
 }
 
-// Assigns every piece on the board a stable id and a random personality,
+// A piece with no personality at all: immune to fatigue/grievance/anger, so
+// it never sleeps, strikes or turns rebel. Used for a bot's own side when
+// the caller asks not to randomize it -- see createChaosState's
+// randomizeColors.
+const STEADY = 'steady'
+
+// Assigns every piece on the board a stable id and, for each color listed
+// in randomizeColors ('w'/'b', both by default), a random personality --
 // walking the board in chess.js's own (fixed) rank/file order so the same
-// seed always hands out the same personalities in the same order.
-export function createChaosState(chess, seed) {
+// seed always hands out the same personalities in the same order. A color
+// left out of randomizeColors gets STEADY pieces instead (see above): used
+// for a bot's own side in Chaos Mode, so the bot doesn't have to contend
+// with its own pieces sleeping, striking or refusing orders.
+export function createChaosState(chess, seed, randomizeColors = ['w', 'b']) {
   let rngState = hashSeed(seed)
   const piecesById = {}
   const bySquare = {}
@@ -61,10 +71,14 @@ export function createChaosState(chess, seed) {
   for (const row of chess.board()) {
     for (const cell of row) {
       if (!cell) continue
-      const pick = randomInt(rngState, PERSONALITY_KEYS.length)
-      rngState = pick.state
       const id = `piece-${nextId++}`
-      piecesById[id] = createPiece(id, cell, PERSONALITY_KEYS[pick.value])
+      if (randomizeColors.includes(cell.color)) {
+        const pick = randomInt(rngState, PERSONALITY_KEYS.length)
+        rngState = pick.state
+        piecesById[id] = createPiece(id, cell, PERSONALITY_KEYS[pick.value])
+      } else {
+        piecesById[id] = createPiece(id, cell, STEADY)
+      }
       bySquare[cell.square] = id
     }
   }
@@ -188,6 +202,7 @@ function resolvePendingLoss(chaos, moverLabel, moverColor, isCapture, news) {
   if (!isCapture) {
     piecesById = { ...piecesById }
     for (const [id, piece] of Object.entries(piecesById)) {
+      if (piece.personality === STEADY) continue
       if (piece.color !== moverColor || !isAdjacent(piece.square, square)) continue
       const mult = PERSONALITIES[piece.personality]
       const grievance = piece.grievance + scaled(CHAOS_CONFIG.grievancePerAdjacentUnpaidLoss, mult.grievanceRise)
@@ -209,7 +224,7 @@ function resolvePendingLoss(chaos, moverLabel, moverColor, isCapture, news) {
 function applyCaptureCoolOff(chaos, moverColor, moverLabel, news) {
   const piecesById = { ...chaos.piecesById }
   for (const [id, piece] of Object.entries(piecesById)) {
-    if (piece.color !== moverColor) continue
+    if (piece.personality === STEADY || piece.color !== moverColor) continue
     const mult = PERSONALITIES[piece.personality]
     piecesById[id] = {
       ...piece,
@@ -224,7 +239,7 @@ function applyCaptureCoolOff(chaos, moverColor, moverLabel, news) {
 function applyFatigue(chaos, moverColor, moverId) {
   const piecesById = { ...chaos.piecesById }
   for (const [id, piece] of Object.entries(piecesById)) {
-    if (piece.color !== moverColor) continue
+    if (piece.personality === STEADY || piece.color !== moverColor) continue
     const mult = PERSONALITIES[piece.personality]
     if (id === moverId) {
       piecesById[id] = { ...piece, fatigue: piece.fatigue + scaled(CHAOS_CONFIG.fatiguePerMove, mult.fatigueRise) }
@@ -243,7 +258,7 @@ function applyFatigue(chaos, moverColor, moverId) {
 function tickAndRecomputeStatus(chaos, moverColor, moverLabel, news) {
   const piecesById = { ...chaos.piecesById }
   for (const [id, piece] of Object.entries(piecesById)) {
-    if (piece.color !== moverColor) continue
+    if (piece.personality === STEADY || piece.color !== moverColor) continue
     const next = { ...piece }
     const wasRebel = next.status === 'rebel'
 
