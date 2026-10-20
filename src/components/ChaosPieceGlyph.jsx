@@ -46,7 +46,7 @@ export function ChaosPieceGlyph({ pieceType, isWhite, piece, shake = false, refu
       </div>
       {piece ? <MoodDot anger={piece.anger} status={status} /> : null}
       {status === 'striking' ? <PicketSign /> : null}
-      {status === 'sleeping' ? <PieceStatusIcon src={iconUrl('zzz.png')} sizePercent={45} /> : null}
+      {status === 'sleeping' ? <PieceStatusIcon src={iconUrl('zzz.png')} sizePercent={62} /> : null}
       {refusing ? <SpeechBubble /> : null}
     </div>
   )
