@@ -10,7 +10,7 @@ export const PERSONALITIES = {
     grievanceFall: 1.3,
     angerRise: 0.7,
     angerFall: 1.3,
-    rebelChance: 0.15,
+    rebelChance: 0.3,
   },
   'hot-headed': {
     fatigueRise: 0.9,
@@ -19,7 +19,7 @@ export const PERSONALITIES = {
     grievanceFall: 0.7,
     angerRise: 1.5,
     angerFall: 0.6,
-    rebelChance: 0.5,
+    rebelChance: 0.7,
   },
   loyal: {
     fatigueRise: 0.8,
@@ -28,7 +28,7 @@ export const PERSONALITIES = {
     grievanceFall: 1.4,
     angerRise: 0.6,
     angerFall: 1.4,
-    rebelChance: 0.1,
+    rebelChance: 0.2,
   },
   jumpy: {
     fatigueRise: 1.3,
@@ -37,7 +37,7 @@ export const PERSONALITIES = {
     grievanceFall: 0.9,
     angerRise: 1.1,
     angerFall: 0.9,
-    rebelChance: 0.35,
+    rebelChance: 0.55,
   },
   dramatic: {
     fatigueRise: 1.0,
@@ -46,7 +46,7 @@ export const PERSONALITIES = {
     grievanceFall: 0.6,
     angerRise: 1.4,
     angerFall: 0.5,
-    rebelChance: 0.45,
+    rebelChance: 0.65,
   },
 }
 
@@ -77,5 +77,5 @@ export const CHAOS_CONFIG = {
   // instead, per its personality's rebelChance.
   angerPerAdjacentUnpaidLoss: 3,
   angerDecayPerCapture: 2,
-  furiousThreshold: 5,
+  furiousThreshold: 4,
 }
