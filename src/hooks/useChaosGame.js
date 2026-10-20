@@ -7,6 +7,17 @@ import {
   describeChaosBlockedSquare,
   matchesCandidate,
 } from '../lib/chaos/chaosEngine'
+import {
+  playChaosGameOverSoundIfOver,
+  playChaosMoveResultSound,
+  playSoundForChaosEvent,
+} from '../lib/chaos/chaosSounds'
+
+// Plays a sound for every news event at index < newCount (the ones this
+// attempt just produced, since news is newest-first).
+function playSoundsForNewEvents(newsList, newCount) {
+  for (let i = 0; i < newCount; i++) playSoundForChaosEvent(newsList[i])
+}
 
 // Chaos Mode's equivalent of useGame.js: holds the chess.js game and the
 // chaos (per-piece personality/fatigue/grievance/anger) state alongside it.
@@ -37,6 +48,9 @@ export function useChaosGame(seed, randomizeColors) {
       const stamped = result.news.map((event) => ({ ...event, moveNumber }))
       finalChaos = result.chaos
       finalNews = [...stamped, ...nextNews]
+      // Right where the strike-break news item itself is produced, same as
+      // every other sound trigger in this file.
+      for (const event of result.news) playSoundForChaosEvent(event)
     }
 
     setFen(chess.fen())
@@ -67,6 +81,7 @@ export function useChaosGame(seed, randomizeColors) {
       const stampedNews = next.news.map((event, index) =>
         index < newCount ? { ...event, moveNumber } : event,
       )
+      playSoundsForNewEvents(stampedNews, newCount)
       setChaos(next.chaos)
       setNews(stampedNews)
       setRefusal({ square: candidate.from, pieceType: candidate.piece })
@@ -79,6 +94,15 @@ export function useChaosGame(seed, randomizeColors) {
     const stampedNews = next.news.map((event, index) =>
       index < newCount ? { ...event, moveNumber } : event,
     )
+
+    // Same point the move itself is applied, same as useGame.js. The
+    // actually-applied move (next.appliedMove) can differ from candidate
+    // when a rebel piece substituted its own target, so capture/check are
+    // read back off the move chess.js just made, not the original request.
+    const lastMove = next.chess.history({ verbose: true }).at(-1)
+    playChaosMoveResultSound({ isCapture: Boolean(lastMove?.captured), isCheck: next.chess.inCheck() })
+    playSoundsForNewEvents(stampedNews, newCount)
+    playChaosGameOverSoundIfOver(next.chess)
 
     settle(next.chess, next.chaos, stampedNews)
     return next.appliedMove
@@ -111,6 +135,8 @@ export function useChaosGame(seed, randomizeColors) {
       const next = applyChaosMove({ chess, chaos: localChaos, news: localNews }, move)
 
       if (next.refused) {
+        const newCount = next.news.length - localNews.length
+        playSoundsForNewEvents(next.news, newCount)
         localChaos = next.chaos
         localNews = next.news
         remaining = remaining.filter((candidate) => candidate.from !== move.from)
@@ -122,6 +148,10 @@ export function useChaosGame(seed, randomizeColors) {
       const stampedNews = next.news.map((event, index) =>
         index < newCount ? { ...event, moveNumber } : event,
       )
+      const lastMove = next.chess.history({ verbose: true }).at(-1)
+      playChaosMoveResultSound({ isCapture: Boolean(lastMove?.captured), isCheck: next.chess.inCheck() })
+      playSoundsForNewEvents(stampedNews, newCount)
+      playChaosGameOverSoundIfOver(next.chess)
       setRefusal(null)
       settle(next.chess, next.chaos, stampedNews)
       return next.appliedMove
