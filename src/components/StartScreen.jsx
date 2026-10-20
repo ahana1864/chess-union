@@ -6,7 +6,7 @@ const SIDES = [
   { value: 'random', label: 'Random' },
 ]
 
-export function StartScreen({ onStart }) {
+export function StartScreen({ onStart, onWatchDemo }) {
   const [mode, setMode] = useState('two-players')
   const [side, setSide] = useState('white')
 
@@ -57,6 +57,16 @@ export function StartScreen({ onStart }) {
         <button type="button" className="start-button" onClick={handleStart}>
           Start
         </button>
+
+        {onWatchDemo ? (
+          <button
+            type="button"
+            className="header-button header-button-outline"
+            onClick={onWatchDemo}
+          >
+            Watch demo
+          </button>
+        ) : null}
       </div>
     </div>
   )
