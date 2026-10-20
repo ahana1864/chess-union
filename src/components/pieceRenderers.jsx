@@ -19,8 +19,10 @@ function badgeFor(pieceType, side, unions) {
 
 // Rebuilt each render with the current union state so striking pieces pick
 // up their badge, and the square the player just tried (and failed) to
-// move from gets the shake animation.
-export function buildPieceRenderers(unions, shakingSquare) {
+// move from gets the shake animation. glyphOffsets comes from
+// useGlyphOffsets and may still be null on the very first render, before
+// fonts finish loading.
+export function buildPieceRenderers(unions, shakingSquare, glyphOffsets) {
   const renderers = {}
   for (const pieceType of Object.keys(PIECE_GLYPHS)) {
     renderers[`w${pieceType.toUpperCase()}`] = ({ square } = {}) => (
@@ -29,6 +31,7 @@ export function buildPieceRenderers(unions, shakingSquare) {
         isWhite={true}
         badge={badgeFor(pieceType, 'white', unions)}
         shake={square === shakingSquare}
+        offset={glyphOffsets?.[`w${pieceType}`]}
       />
     )
     renderers[`b${pieceType.toUpperCase()}`] = ({ square } = {}) => (
@@ -37,6 +40,7 @@ export function buildPieceRenderers(unions, shakingSquare) {
         isWhite={false}
         badge={badgeFor(pieceType, 'black', unions)}
         shake={square === shakingSquare}
+        offset={glyphOffsets?.[`b${pieceType}`]}
       />
     )
   }

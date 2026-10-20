@@ -26,6 +26,7 @@
   --sq-selected: #f2c94c;
   --coord-on-light: #5e7a62;
   --coord-on-dark: #efe6cf;
+  --font-title: 'Bebas Neue', sans-serif;
 }
 
 * {
@@ -42,7 +43,7 @@ body {
 h1,
 h2,
 h3 {
-  font-family: 'Anton', sans-serif;
+  font-family: var(--font-title);
   letter-spacing: 1px;
   margin: 0;
   text-transform: uppercase;
@@ -100,7 +101,7 @@ body {
 }
 
 .wordmark {
-  font-size: 34px;
+  font-size: 37px;
   line-height: 1;
 }
 
@@ -488,6 +489,9 @@ body {
   top: 2%;
   right: 2%;
   height: auto;
+  background: none;
+  border: none;
+  padding: 0;
   pointer-events: none;
 }
 
@@ -550,8 +554,8 @@ body {
 
 .strike-banner-title {
   margin: 0;
-  font-family: 'Anton', sans-serif;
-  font-size: 40px;
+  font-family: var(--font-title);
+  font-size: 44px;
   line-height: 1.05;
   letter-spacing: 1.5px;
 }
@@ -718,7 +722,7 @@ body {
 }
 
 .start-card .wordmark {
-  font-size: 34px;
+  font-size: 37px;
 }
 
 .start-card .tagline {
@@ -806,8 +810,8 @@ body {
 .rules-modal {
   width: 100%;
   max-width: 560px;
-  max-height: 100%;
-  overflow-y: auto;
+  max-height: 90vh;
+  overflow: hidden;
   background: var(--panel);
   border: 2px solid var(--ink);
   border-radius: 14px;
@@ -819,23 +823,42 @@ body {
 
 .rules-modal-heading {
   font-size: 26px;
+  flex-shrink: 0;
 }
 
 .rules-cards {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  overflow-y: auto;
+  min-height: 0;
+  padding-right: 4px;
 }
 
 .rules-card {
   border: 1.5px solid var(--meter-empty);
   border-radius: 10px;
   padding: 12px 14px;
+  flex-shrink: 0;
 }
 
-.rules-card h3 {
-  font-size: 15px;
+.rules-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 4px;
+}
+
+.rules-card-head h3 {
+  font-size: 15px;
+  margin-bottom: 0;
+}
+
+.rules-card-icon {
+  width: 28px;
+  height: auto;
+  flex-shrink: 0;
 }
 
 .rules-card p {
@@ -843,6 +866,11 @@ body {
   font-size: 14px;
   line-height: 1.4;
   color: var(--ink-2);
+}
+
+.rules-card p.rules-card-note {
+  margin-top: 6px;
+  font-style: italic;
 }
 
 .rules-modal .header-button,
@@ -866,7 +894,7 @@ body {
 }
 
 .game-over-result {
-  font-size: 40px;
+  font-size: 44px;
   line-height: 1.05;
 }
 

@@ -14,6 +14,7 @@ import { pickBotMove } from '../lib/bot'
 import { getCapturedPieces } from '../lib/capturedPieces'
 import { CapturedTray } from './CapturedTray'
 import { sideHasBishop } from '../lib/boardInfo'
+import { useGlyphOffsets } from '../hooks/useGlyphOffsets'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -48,6 +49,8 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   const shakeTimeoutRef = useRef(null)
   const bannerTimeoutRef = useRef(null)
   const lastBannerEventRef = useRef(null)
+  const boardWrapRef = useRef(null)
+  const glyphOffsets = useGlyphOffsets(boardWrapRef)
 
   // Vs bot: the bot plays whichever side the human didn't pick.
   const botSide = config?.mode === 'vs-bot' ? (config.side === 'white' ? 'black' : 'white') : null
@@ -277,7 +280,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
-    pieces: buildPieceRenderers(game.unions, shakingSquare),
+    pieces: buildPieceRenderers(game.unions, shakingSquare, glyphOffsets),
     showNotation: true,
     darkSquareStyle: { backgroundColor: 'var(--sq-dark)' },
     lightSquareStyle: { backgroundColor: 'var(--sq-light)' },
@@ -314,7 +317,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
             <CapturedTray capturedColor={capturedColorFor(topSide)} pieces={trayFor(topSide)} />
           </div>
 
-          <div className="board-wrap">
+          <div className="board-wrap" ref={boardWrapRef}>
             {banner ? (
               <StrikeBanner kind={banner.kind} side={banner.side} turnsLeft={banner.turnsLeft} />
             ) : null}

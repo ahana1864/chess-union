@@ -28,7 +28,11 @@ const GLYPH_STYLE_BASE = {
 
 // badge: null | { type: 'picket' } (striking pawns) | { type: 'icon', src,
 // sizePercent } (work-to-rule bishops, sitting-out rooks).
-export function PieceGlyph({ pieceType, isWhite, badge = null, shake = false }) {
+// offset: null | { x, y } in px, from useGlyphOffsets -- nudges the glyph so
+// its actual ink sits at the square's centre instead of the font's layout
+// centre.
+export function PieceGlyph({ pieceType, isWhite, badge = null, shake = false, offset = null }) {
+  const transform = offset ? `translate(${offset.x}px, ${offset.y}px)` : undefined
   return (
     <div className={shake ? 'piece-shake' : undefined} style={CONTAINER_STYLE}>
       <div
@@ -39,8 +43,9 @@ export function PieceGlyph({ pieceType, isWhite, badge = null, shake = false }) 
                 color: 'var(--panel)',
                 WebkitTextStroke: '1.5px var(--ink)',
                 paintOrder: 'stroke fill',
+                transform,
               }
-            : { ...GLYPH_STYLE_BASE, color: 'var(--ink)' }
+            : { ...GLYPH_STYLE_BASE, color: 'var(--ink)', transform }
         }
       >
         {PIECE_GLYPHS[pieceType]}

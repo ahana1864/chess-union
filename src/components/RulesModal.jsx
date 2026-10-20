@@ -13,6 +13,17 @@ const CARDS = [
     title: 'King crosses the picket line',
     body: 'If a strike would leave you with no legal move at all, it breaks immediately. Example: you are in check and only a striking pawn can capture the attacker — it does, and the union heads straight into cooldown.',
   },
+  {
+    title: 'Minors',
+    body: 'Lose two bishops or knights for nothing and your remaining bishops go on work-to-rule: 2 squares at most, for 3 turns.',
+    icon: '/icons/anger.png',
+    note: 'Any capture you make calms every union by one.',
+  },
+  {
+    title: 'Rooks',
+    body: 'Move the same rook 4 times in a row and your rooks take a nap for one turn.',
+    icon: '/icons/zzz.png',
+  },
 ]
 
 export function RulesModal({ onClose }) {
@@ -39,8 +50,14 @@ export function RulesModal({ onClose }) {
         <div className="rules-cards">
           {CARDS.map((card) => (
             <div className="rules-card" key={card.title}>
-              <h3>{card.title}</h3>
+              <div className="rules-card-head">
+                <h3>{card.title}</h3>
+                {card.icon ? (
+                  <img src={card.icon} alt="" aria-hidden="true" className="rules-card-icon" />
+                ) : null}
+              </div>
               <p>{card.body}</p>
+              {card.note ? <p className="rules-card-note">{card.note}</p> : null}
             </div>
           ))}
         </div>
