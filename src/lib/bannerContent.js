@@ -1,4 +1,5 @@
 import { RULES_CONFIG } from './rulesConfig'
+import { iconUrl } from './assetPath'
 
 function sideName(side) {
   return side === 'white' ? "White's" : "Black's"
@@ -20,7 +21,7 @@ export function bannerContentFor(event, unions) {
     return {
       title: 'BISHOPS ON WORK-TO-RULE',
       subtitle: `${sideName(side)} bishops move ${RULES_CONFIG.minors.maxSquares} squares at most for ${pluralTurns(turnsLeft)}. Capture something to cool things down.`,
-      icon: '/icons/anger.png',
+      icon: iconUrl('anger.png'),
     }
   }
 
@@ -28,7 +29,7 @@ export function bannerContentFor(event, unions) {
     return {
       title: 'ROOKS TAKE A NAP',
       subtitle: `${sideName(side)} rooks sit out this turn.`,
-      icon: '/icons/zzz.png',
+      icon: iconUrl('zzz.png'),
     }
   }
 

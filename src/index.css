@@ -235,6 +235,9 @@ body {
   width: var(--board-size);
   height: var(--board-size);
   flex-shrink: 0;
+  /* Lets the strike banner's title/detail font-size (clamp(...cqi...))
+     scale off the board's own width instead of the viewport's. */
+  container-type: inline-size;
 }
 
 .player-bar {
@@ -523,19 +526,19 @@ body {
   pointer-events: none;
   background: var(--strike);
   color: #fff;
-  padding: 14px 22px;
+  padding: 10px 16px;
   border-radius: 0;
   box-shadow: 0 3px 0 var(--ink);
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   animation: strike-banner-in 250ms ease-out;
 }
 
 .strike-banner-sign {
   position: relative;
-  width: 64px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   flex-shrink: 0;
 }
 
@@ -543,8 +546,8 @@ body {
   position: absolute;
   bottom: 0;
   left: 50%;
-  width: 4px;
-  height: 24px;
+  width: 3px;
+  height: 18px;
   background: var(--ink);
   transform: translateX(-50%);
 }
@@ -552,9 +555,9 @@ body {
 .strike-banner-placard {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 64px;
-  height: 42px;
+  left: 2px;
+  width: 50px;
+  height: 34px;
   background: var(--cardboard);
   border: 2px solid var(--ink);
   border-radius: 4px;
@@ -564,28 +567,39 @@ body {
 }
 
 .strike-banner-icon {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   object-fit: contain;
+  flex-shrink: 0;
 }
 
 .strike-banner-text {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
 }
 
 .strike-banner-title {
   margin: 0;
   font-family: var(--font-title);
-  font-size: 44px;
+  /* Scales with the board's own width (board-wrap is a cqi container, see
+     below) so a long title stays on one line and the banner stays
+     compact even at the narrowest supported board size, instead of
+     wrapping to 2+ lines and blowing past the ~15%-of-board-height
+     target. 34px is the ceiling, reached once the board is wide enough. */
+  font-size: clamp(18px, 5.4cqi, 34px);
   line-height: 1.05;
-  letter-spacing: 1.5px;
+  letter-spacing: 1px;
 }
 
 .strike-banner-detail {
   margin: 0;
-  font: 500 15px 'Barlow', sans-serif;
+  font-family: 'Barlow', sans-serif;
+  font-weight: 500;
+  font-size: clamp(11px, 2.1cqi, 13px);
+  line-height: 1.3;
 }
 
 @keyframes strike-banner-in {

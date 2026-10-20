@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { iconUrl } from '../lib/assetPath'
 
 const CARDS = [
   {
@@ -16,13 +17,13 @@ const CARDS = [
   {
     title: 'Minors',
     body: 'Lose two bishops or knights for nothing and your remaining bishops go on work-to-rule: 2 squares at most, for 3 turns.',
-    icon: '/icons/anger.png',
+    icon: iconUrl('anger.png'),
     note: 'Any capture you make calms every union by one.',
   },
   {
     title: 'Rooks',
     body: 'Move the same rook 4 times in a row and your rooks take a nap for one turn.',
-    icon: '/icons/zzz.png',
+    icon: iconUrl('zzz.png'),
   },
 ]
 

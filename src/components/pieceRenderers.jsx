@@ -1,4 +1,5 @@
 import { PIECE_GLYPHS } from '../lib/pieceGlyphs'
+import { iconUrl } from '../lib/assetPath'
 import { PieceGlyph } from './PieceGlyph'
 
 // Striking pawns get a picket sign; a bishop working to rule or a sitting-
@@ -11,10 +12,10 @@ function badgeFor(pieceType, square, side, unions, restrictedSet) {
     return { type: 'picket' }
   }
   if (pieceType === 'b' && restrictedSet.has(square)) {
-    return { type: 'icon', src: '/icons/anger.png', sizePercent: 40 }
+    return { type: 'icon', src: iconUrl('anger.png'), sizePercent: 40 }
   }
   if (pieceType === 'r' && restrictedSet.has(square)) {
-    return { type: 'icon', src: '/icons/zzz.png', sizePercent: 45 }
+    return { type: 'icon', src: iconUrl('zzz.png'), sizePercent: 45 }
   }
   return null
 }
