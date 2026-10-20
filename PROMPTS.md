@@ -57,7 +57,7 @@ Rules for every step:
   Done when: opening each URL always reproduces the described sequence.
 
 - [x] **9. Bishop and rook unions, captured pieces** (F12, F14)
-  Add the bishop work-to-rule (at most 2 squares for 3 turns after 2 unpaid bishop losses) and the rook union break (same rook 4 moves in a row, rooks sit out 1 turn) to the engine with tests first, then the UI (meters, chips, news, banners). Add captured-piece trays per side.
+  Add the Minors union: unpaid losses of bishops or knights are counted together, and at 2 your remaining bishops work to rule (at most 2 squares for 3 turns; if no bishop is left nothing is restricted and the card says "No bishops left"). Unpaid losses during cooldown do not count. Show it with the anger icon (public/icons/anger.png) over each restricted bishop, with no banner or picket sign. For the rook union show the "zzz" icon (public/icons/zzz.png) over each rook while rooks sit out. Both images are in the project's public/icons folder; use them as they are. The rook union break is: the same rook moves 4 times in a row, then rooks sit out 1 turn. Add both to the engine with tests first, then the UI (meters, chips, news, banners). Add captured-piece trays per side.
   Done when: tests pass and both unions show up correctly in the panel; if this runs long, cut the rook union first.
 
 - [ ] **10. Polish and optional features** (F16, F17, F18)

@@ -13,6 +13,7 @@ import { statusText } from '../lib/statusText'
 import { pickBotMove } from '../lib/bot'
 import { getCapturedPieces } from '../lib/capturedPieces'
 import { CapturedTray } from './CapturedTray'
+import { sideHasBishop } from '../lib/boardInfo'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -82,18 +83,20 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBotTurn, game.fen, game.currentMoves])
 
-  // Shows the strike / strike-break banner once per genuinely new event
-  // (news is newest-first, so we only act when that first event changes),
-  // then auto-dismisses it; the status chips and picket signs carry the
-  // rest of the strike.
+  // Shows the strike / strike-break banner once per genuinely new pawns
+  // event (news is newest-first, so we only act when that first event
+  // changes), then auto-dismisses it; the status chips and picket signs
+  // carry the rest of the strike. Minors (work-to-rule) and rooks (sit-out)
+  // never get a banner -- the union card and news feed carry those.
   useEffect(() => {
     const latest = game.news[0]
     if (!latest || latest === lastBannerEventRef.current) return
     lastBannerEventRef.current = latest
     if (latest.type !== 'strike' && latest.type !== 'strike-break') return
+    if (latest.union !== 'pawns') return
 
-    const turnsLeft = game.unions[latest.side]?.[latest.union]?.turnsLeft ?? 0
-    setBanner({ kind: latest.type, side: latest.side, union: latest.union, turnsLeft })
+    const turnsLeft = game.unions[latest.side]?.pawns?.turnsLeft ?? 0
+    setBanner({ kind: latest.type, side: latest.side, turnsLeft })
 
     clearTimeout(bannerTimeoutRef.current)
     bannerTimeoutRef.current = setTimeout(() => setBanner(null), BANNER_VISIBLE_MS)
@@ -264,6 +267,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   const { byWhite, byBlack } = getCapturedPieces(chess)
   const trayFor = (side) => (side === 'white' ? byWhite : byBlack)
   const capturedColorFor = (side) => (side === 'white' ? 'black' : 'white')
+  const hasBishop = { white: sideHasBishop(chess, 'white'), black: sideHasBishop(chess, 'black') }
 
   const chessboardOptions = {
     id: 'chess-union-board',
@@ -288,7 +292,12 @@ export function Game({ config, onReturnToStart, onShowRules }) {
 
       <div className="layout">
         <aside className="unions-column">
-          <UnionPanel unions={game.unions} sideToMove={sideToMove} orientation={orientation} />
+          <UnionPanel
+            unions={game.unions}
+            sideToMove={sideToMove}
+            orientation={orientation}
+            hasBishop={hasBishop}
+          />
         </aside>
 
         <main className="board-column">
@@ -307,12 +316,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
 
           <div className="board-wrap">
             {banner ? (
-              <StrikeBanner
-                kind={banner.kind}
-                side={banner.side}
-                union={banner.union}
-                turnsLeft={banner.turnsLeft}
-              />
+              <StrikeBanner kind={banner.kind} side={banner.side} turnsLeft={banner.turnsLeft} />
             ) : null}
             <Chessboard options={chessboardOptions} />
             {promotionMove ? (

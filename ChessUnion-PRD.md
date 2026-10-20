@@ -60,8 +60,10 @@ Standard chess rules apply. On top, every piece type can form a union, and both 
 | Union | Trigger | Effect | Priority |
 | --- | --- | --- | --- |
 | Pawns | 3 unpaid pawn losses | Strike: no pawn moves or captures for 3 of your turns | Core (P0) |
-| Bishops | 2 unpaid bishop losses | Work-to-rule: bishops move at most 2 squares for 3 of your turns | Stretch (P1) |
-| Rooks | Same rook moves 4 times in a row | Union break: rooks sit out 1 turn | Stretch (P1) |
+| Minors (bishops and knights) | 2 unpaid losses of bishops or knights, counted together | Work-to-rule: your remaining bishops move at most 2 squares for 3 of your turns. If no bishop is left, nothing is restricted and the union card says "No bishops left". Marked on the board with the anger icon, not a picket sign or strike banner. | Stretch (P1) |
+| Rooks | Same rook moves 4 times in a row | Union break: rooks sit out 1 turn. Marked on the board with the sleeping "zzz" bubble icon over each rook. | Stretch (P1) |
+
+**Icons:** pawn strikes use the picket sign and the red banner. Minor-piece work-to-rule shows the red anger-vein icon (public/icons/anger.png) over each restricted bishop, with no banner. A rook sit-out shows the "zzz" thought-bubble icon (public/icons/zzz.png) over each rook. Unpaid losses during cooldown do not count toward the next trigger.
 
 **Strike-break (the "King crosses the picket line")**
 

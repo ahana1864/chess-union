@@ -2,7 +2,7 @@ import { RULES_CONFIG } from '../lib/rulesConfig'
 
 const UNION_LABELS = {
   pawns: 'Pawns',
-  bishops: 'Bishops',
+  minors: 'Minors',
   rooks: 'Rooks',
 }
 
@@ -14,12 +14,15 @@ const STATUS_LABELS = {
 }
 
 // Rooks track consecutive moves rather than grievance, and their "strike"
-// is a 1-turn sit-out with no cooldown; bishops' "strike" is a work-to-rule
-// range limit rather than a full stop. Notes read accordingly.
-function noteFor(unionKey, data, limit) {
+// is a 1-turn sit-out with no cooldown; minors' "strike" only restricts
+// bishops (to at most 2 squares) -- knights feed the same grievance but
+// are never themselves limited, and if no bishop is left there's nothing
+// to restrict at all. Notes read accordingly.
+function noteFor(unionKey, data, limit, hasBishop) {
   if (data.status === 'strike') {
-    if (unionKey === 'bishops') {
-      return `Max ${RULES_CONFIG.bishops.maxSquares} squares for ${data.turnsLeft} turns`
+    if (unionKey === 'minors') {
+      if (!hasBishop) return 'No bishops left'
+      return `Max ${RULES_CONFIG.minors.maxSquares} squares for ${data.turnsLeft} turns`
     }
     return `Back at work in ${data.turnsLeft} turns`
   }
@@ -28,7 +31,7 @@ function noteFor(unionKey, data, limit) {
   return `${data.grievance} of ${limit} unpaid losses`
 }
 
-function UnionRow({ unionKey, data }) {
+function UnionRow({ unionKey, data, hasBishop }) {
   const config = RULES_CONFIG[unionKey]
   const limit = unionKey === 'rooks' ? config.consecutiveMovesLimit : config.unpaidLossLimit
   const segments = limit
@@ -55,12 +58,12 @@ function UnionRow({ unionKey, data }) {
           />
         ))}
       </div>
-      <p className="union-row-note">{noteFor(unionKey, data, limit)}</p>
+      <p className="union-row-note">{noteFor(unionKey, data, limit, hasBishop)}</p>
     </div>
   )
 }
 
-export function UnionCard({ side, sideLabel, isToMove, unions }) {
+export function UnionCard({ side, sideLabel, isToMove, unions, hasBishop }) {
   return (
     <div className="union-card">
       <div className="union-card-header">
@@ -69,7 +72,7 @@ export function UnionCard({ side, sideLabel, isToMove, unions }) {
         {isToMove ? <span className="to-move-pill">TO MOVE</span> : null}
       </div>
       {Object.entries(unions).map(([unionKey, data]) => (
-        <UnionRow key={unionKey} unionKey={unionKey} data={data} />
+        <UnionRow key={unionKey} unionKey={unionKey} data={data} hasBishop={hasBishop} />
       ))}
     </div>
   )

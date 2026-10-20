@@ -1,5 +1,6 @@
 import { PIECE_GLYPHS } from '../lib/pieceGlyphs'
 import { PicketSign } from './PicketSign'
+import { PieceStatusIcon } from './PieceStatusIcon'
 
 // A container needs to be a different element than the one using its query
 // units (an element can't size itself off its own container). The outer div
@@ -25,7 +26,9 @@ const GLYPH_STYLE_BASE = {
   userSelect: 'none',
 }
 
-export function PieceGlyph({ pieceType, isWhite, onStrike = false, shake = false }) {
+// badge: null | { type: 'picket' } (striking pawns) | { type: 'icon', src,
+// sizePercent } (work-to-rule bishops, sitting-out rooks).
+export function PieceGlyph({ pieceType, isWhite, badge = null, shake = false }) {
   return (
     <div className={shake ? 'piece-shake' : undefined} style={CONTAINER_STYLE}>
       <div
@@ -42,7 +45,10 @@ export function PieceGlyph({ pieceType, isWhite, onStrike = false, shake = false
       >
         {PIECE_GLYPHS[pieceType]}
       </div>
-      {onStrike ? <PicketSign /> : null}
+      {badge?.type === 'picket' ? <PicketSign /> : null}
+      {badge?.type === 'icon' ? (
+        <PieceStatusIcon src={badge.src} sizePercent={badge.sizePercent} />
+      ) : null}
     </div>
   )
 }

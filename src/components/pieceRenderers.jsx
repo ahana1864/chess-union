@@ -1,8 +1,24 @@
 import { PIECE_GLYPHS } from '../lib/pieceGlyphs'
 import { PieceGlyph } from './PieceGlyph'
 
-// Rebuilt each render with the current union state so striking pawns pick
-// up a picket sign, and the square the player just tried (and failed) to
+// Striking pawns get a picket sign; a bishop working to rule gets the anger
+// icon; a rook sitting out gets the zzz icon. Knights are never badged --
+// they feed the minors union's grievance but aren't themselves restricted.
+function badgeFor(pieceType, side, unions) {
+  if (pieceType === 'p' && unions[side].pawns.status === 'strike') {
+    return { type: 'picket' }
+  }
+  if (pieceType === 'b' && unions[side].minors.status === 'strike') {
+    return { type: 'icon', src: '/icons/anger.png', sizePercent: 40 }
+  }
+  if (pieceType === 'r' && unions[side].rooks.status === 'strike') {
+    return { type: 'icon', src: '/icons/zzz.png', sizePercent: 45 }
+  }
+  return null
+}
+
+// Rebuilt each render with the current union state so striking pieces pick
+// up their badge, and the square the player just tried (and failed) to
 // move from gets the shake animation.
 export function buildPieceRenderers(unions, shakingSquare) {
   const renderers = {}
@@ -11,7 +27,7 @@ export function buildPieceRenderers(unions, shakingSquare) {
       <PieceGlyph
         pieceType={pieceType}
         isWhite={true}
-        onStrike={pieceType === 'p' && unions.white.pawns.status === 'strike'}
+        badge={badgeFor(pieceType, 'white', unions)}
         shake={square === shakingSquare}
       />
     )
@@ -19,7 +35,7 @@ export function buildPieceRenderers(unions, shakingSquare) {
       <PieceGlyph
         pieceType={pieceType}
         isWhite={false}
-        onStrike={pieceType === 'p' && unions.black.pawns.status === 'strike'}
+        badge={badgeFor(pieceType, 'black', unions)}
         shake={square === shakingSquare}
       />
     )

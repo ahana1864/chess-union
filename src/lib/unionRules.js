@@ -3,15 +3,19 @@ import { RULES_CONFIG } from './rulesConfig'
 const FILES = 'abcdefgh'
 
 // Which chess.js piece letter belongs to which grievance-based union
-// (unpaid loss -> strike -> cooldown, same mechanic for both). Rooks break
-// for a different reason entirely (4 consecutive moves by the same rook)
-// and aren't tracked by grievance, so they're deliberately left out.
+// (unpaid loss -> strike -> cooldown, same mechanic for both). Bishops and
+// knights share one "minors" counter -- losing either feeds the same
+// grievance -- but only bishops are actually restricted by it (see
+// isMoveBlockedByUnion). Rooks break for a different reason entirely (4
+// consecutive moves by the same rook) and aren't tracked by grievance, so
+// they're deliberately left out here.
 const PIECE_TO_UNION = {
   p: 'pawns',
-  b: 'bishops',
+  b: 'minors',
+  n: 'minors',
 }
 
-const GRIEVANCE_UNIONS = ['pawns', 'bishops']
+const GRIEVANCE_UNIONS = ['pawns', 'minors']
 
 function createGrievanceUnion() {
   return {
@@ -34,7 +38,7 @@ function createRookUnion() {
 function createSideUnions() {
   return {
     pawns: createGrievanceUnion(),
-    bishops: createGrievanceUnion(),
+    minors: createGrievanceUnion(),
     rooks: createRookUnion(),
   }
 }
@@ -63,9 +67,11 @@ function isMoveBlockedByUnion(move, sideUnions) {
     return sideUnions.pawns.status === 'strike'
   }
   if (move.piece === 'b') {
+    // Only bishops are restricted by the minors union's work-to-rule, even
+    // though knight losses also feed its grievance counter.
     return (
-      sideUnions.bishops.status === 'strike' &&
-      squareDistance(move.from, move.to) > RULES_CONFIG.bishops.maxSquares
+      sideUnions.minors.status === 'strike' &&
+      squareDistance(move.from, move.to) > RULES_CONFIG.minors.maxSquares
     )
   }
   if (move.piece === 'r') {

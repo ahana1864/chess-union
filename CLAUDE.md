@@ -45,7 +45,7 @@ P0 — the whole joke working on desktop; the project stands on P0 alone.
 P1 — stretch, after all P0 is done.
 
 - F11 Bot opponent — random or greedy legal-move bot; its unions strike too
-- F12 Bishop and rook unions — work-to-rule and union break
+- F12 Minors (bishops/knights) and rook unions — work-to-rule and union break
 - F13 Demo position (`?demo=1`, `?demo=2`) — repeatable scripted scenarios
 - F14 Move list and captured-piece trays
 
@@ -75,9 +75,13 @@ P2 — optional polish, cut first if time runs short.
   side always has a legal move unless the game is truly over.
 - **Thresholds (P0 pawns, from `rulesConfig.js`):** 3 unpaid losses → strike;
   strike lasts 3 turns; cooldown lasts 5 turns.
-- **Stretch unions (P1):** Bishops — 2 unpaid losses → work-to-rule (max
-  2-square moves) for 3 turns. Rooks — same rook moved 4 times in a row →
-  sits out 1 turn.
+- **Stretch unions (P1):** Minors — bishop and knight unpaid losses share one
+  grievance counter; at 2, remaining bishops work to rule (max 2-square
+  moves) for 3 turns (knights are never restricted, even though a knight
+  loss counts toward the grievance). If no bishop is left, nothing is
+  restricted. Shown with the anger icon over each restricted bishop — no
+  picket sign, no strike banner. Rooks — same rook moved 4 times in a row →
+  sits out 1 turn, shown with the zzz icon over each rook, no banner.
 - En passant and promotion count as pawn moves, so both are blocked during a
   pawn strike. Castling, check, checkmate, stalemate, threefold repetition
   and the 50-move rule are unchanged, straight from chess.js.

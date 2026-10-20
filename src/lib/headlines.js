@@ -5,7 +5,7 @@
 
 const UNION_LABELS = {
   pawns: 'pawns',
-  bishops: 'bishops',
+  minors: 'minors',
   rooks: 'rooks',
 }
 
@@ -35,8 +35,8 @@ const STRIKE_TEMPLATES = {
     `${sideName(side)}'s pawns down tools. No moves, no captures, no exceptions.`,
     `Breaking: ${sideName(side)}'s pawns are officially on strike.`,
   ],
-  bishops: (side) => [
-    `${sideName(side)}'s bishops announce a strict work-to-rule: two squares, no further.`,
+  minors: (side) => [
+    `${sideName(side)}'s minors announce a strict work-to-rule: bishops limited to two squares.`,
     `${sideName(side)}'s bishops stop cutting corners — literally. Short moves only.`,
     `Breaking: ${sideName(side)}'s bishops adopt a go-slow. Long diagonals are off the table.`,
   ],
@@ -53,7 +53,7 @@ const STRIKE_ENDS_TEMPLATES = {
     `${sideName(side)}'s pawns return to work, grievances forgiven for the moment.`,
     `The picket line folds: ${sideName(side)}'s pawns are back on duty.`,
   ],
-  bishops: (side) => [
+  minors: (side) => [
     `${sideName(side)}'s bishops are cleared to cross the board again.`,
     `Work-to-rule lifted: ${sideName(side)}'s bishops can run the full diagonal once more.`,
     `${sideName(side)}'s bishops stretch their legs — long moves are back.`,
@@ -71,7 +71,7 @@ const STRIKE_BREAK_TEMPLATES = {
     `The King crosses the picket line — ${sideName(side)}'s pawns are back to work immediately.`,
     `Emergency session: ${sideName(side)}'s pawns break the strike rather than lose the game.`,
   ],
-  bishops: (side) => [
+  minors: (side) => [
     `Scandal! ${sideName(side)}'s bishops abandon the work-to-rule under pressure.`,
     `The King crosses the picket line — ${sideName(side)}'s bishops drop the restriction at once.`,
     `Emergency session: ${sideName(side)}'s bishops go long rather than lose the game.`,

@@ -5,7 +5,7 @@ const SIDE_LABELS = { white: 'White', black: 'Black' }
 // Opponent on top, you on the bottom, matching the board orientation (so if
 // you're playing Black, Black's card sits at the bottom where your pieces
 // visually are).
-export function UnionPanel({ unions, sideToMove, orientation = 'white' }) {
+export function UnionPanel({ unions, sideToMove, orientation = 'white', hasBishop }) {
   const bottomSide = orientation
   const topSide = orientation === 'white' ? 'black' : 'white'
 
@@ -17,12 +17,14 @@ export function UnionPanel({ unions, sideToMove, orientation = 'white' }) {
         sideLabel={SIDE_LABELS[topSide]}
         isToMove={sideToMove === topSide}
         unions={unions[topSide]}
+        hasBishop={hasBishop[topSide]}
       />
       <UnionCard
         side={bottomSide}
         sideLabel={SIDE_LABELS[bottomSide]}
         isToMove={sideToMove === bottomSide}
         unions={unions[bottomSide]}
+        hasBishop={hasBishop[bottomSide]}
       />
       <p className="union-panel-explainer">
         Lose a piece without an immediate recapture and its union files a

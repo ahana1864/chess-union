@@ -481,6 +481,16 @@ body {
   background: var(--ink);
 }
 
+/* ---------- Work-to-rule / sit-out icons (minors, rooks) ---------- */
+
+.piece-status-icon {
+  position: absolute;
+  top: 2%;
+  right: 2%;
+  height: auto;
+  pointer-events: none;
+}
+
 /* ---------- Strike banner ---------- */
 
 .strike-banner {

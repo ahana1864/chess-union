@@ -71,8 +71,8 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 - Padding 20, right border 2px `--ink`, gap 14. Heading "THE UNIONS" in Anton 22px.
 - Two union cards, opponent (Black) on top, you (White) below, matching the board orientation. Each card: `--panel` background, 2px `--ink` border, radius 14, padding 14 16, gap 14.
 - Card header: a 14px circle in the side colour (2px `--ink` border) plus the side name 16px/700. The side to move shows a "TO MOVE" pill (`--ink` background, `--paper` text, 12px/700, padding 3 10).
-- Each union row (Pawns, Bishops, Rooks), gap 6: name 15px/600 on the left, status chip on the right (12px/700, padding 2 10, pill); below it a meter; below that a note in 12px `--ink-2`.
-- **Meter:** a row of segments, gap 4, each flex-grow 1, 8px tall, radius 4. Pawns have 3 segments, Bishops 2, Rooks 4. Filled segments are `--warn` while grumbling and `--strike` during a strike; empty ones are `--meter-empty`.
+- Each union row (Pawns, Minors, Rooks), gap 6: name 15px/600 on the left, status chip on the right (12px/700, padding 2 10, pill); below it a meter; below that a note in 12px `--ink-2`.
+- **Meter:** a row of segments, gap 4, each flex-grow 1, 8px tall, radius 4. Pawns have 3 segments, Minors 2, Rooks 4. Filled segments are `--warn` while grumbling and `--strike` during a strike; empty ones are `--meter-empty`.
 - **Status chips:** Calm (`--calm-*`), Grumbling (`--grum-*`), On strike (`--strike` background, white text), Cooldown (`--cool-*`).
 - **Notes:** "{n} of {limit} unpaid losses", "{n} of 4 moves in a row" (rooks), "Back at work in {n} turns" (strike), "Cooling off for {n} turns" (cooldown).
 - A 13px `--ink-2` explainer paragraph sits under the cards.
@@ -80,6 +80,8 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 ## Desktop: centre column
 
 - Content is vertically centred, gap 12. Player bars (640px wide) sit above and below the board: a 28px side circle (2px `--ink` border), side name 16px/700, a 14px `--ink-2` caption ("Bot · greedy", "You"), and on the right that side's captured pieces as glyphs at 22px (white pieces keep the stroke).
+- **Work-to-rule icon (Minors union):** the red anger-vein image (public/icons/anger.png) at about 40% of the square size, top-right of each restricted bishop's square. No picket sign and no strike banner for this union. The union card shows the same chip style as other unions ("On work-to-rule", turns left).
+- **Rook sit-out icon:** the sleeping "zzz" thought bubble (public/icons/zzz.png) at about 45% of the square size, top-right of each rook's square while rooks sit out. No banner. Both icons are `aria-hidden="true"`; the news feed and union card carry the same information as text.
 - **Strike banner:** overlays the top of the board, full board width, `--strike` background, white text, padding 14 22, box-shadow `0 3px 0 --ink`, `role="status"`. Left: a large picket sign (64 × 42 placard, rotated −6°). Right: "PAWNS ON STRIKE" in Anton 40px/1.05 (letter-spacing 1.5px) and a 15px/500 line "White's pawns won't move or capture for 3 turns. Capture something to cool things down." It appears for about 2 seconds, then collapses to the status chips and picket signs, which stay for the whole strike.
 - **Blocked-move toast:** bottom centre of the board, `--ink` background, `--paper` text, 15px/600, padding 10 18, radius 10: "Pawns are on strike (3 turns left)". The pawn shakes (translateX ±4px, 200ms) when the player tries to move it.
 

@@ -7,8 +7,10 @@ export const RULES_CONFIG = {
     strikeDuration: 3, // turns pawns refuse to move or capture
     cooldownDuration: 5, // turns before the union can strike again
   },
-  bishops: {
-    unpaidLossLimit: 2, // unpaid losses before the union works to rule
+  minors: {
+    // Bishops and knights share this grievance; only bishops are actually
+    // restricted when it trips (see unionRules.js).
+    unpaidLossLimit: 2, // unpaid bishop/knight losses before the union works to rule
     strikeDuration: 3, // turns bishops are limited to maxSquares
     cooldownDuration: 5, // turns before the union can work to rule again
     maxSquares: 2, // furthest a bishop may move while working to rule

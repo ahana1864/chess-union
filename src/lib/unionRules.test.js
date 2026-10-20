@@ -158,18 +158,18 @@ describe('move filtering during a strike', () => {
   })
 })
 
-describe('bishop work-to-rule', () => {
-  it('starts working to rule after 2 unpaid bishop losses', () => {
+describe('minors union (bishops and knights)', () => {
+  it('starts working to rule after 2 unpaid losses', () => {
     const unions = createUnionState()
     unions.white = {
       ...unions.white,
-      bishops: { ...unions.white.bishops, grievance: 1, status: 'grumbling', pendingUnpaidLoss: true },
+      minors: { ...unions.white.minors, grievance: 1, status: 'grumbling', pendingUnpaidLoss: true },
     }
     const chess = new Chess('k7/8/8/8/8/8/8/K5N1 w - - 0 1')
 
     const next = applyMove({ chess, unions, news: [] }, 'Nf3')
 
-    expect(next.unions.white.bishops).toEqual({
+    expect(next.unions.white.minors).toEqual({
       grievance: 2,
       status: 'strike',
       turnsLeft: 3,
@@ -178,12 +178,27 @@ describe('bishop work-to-rule', () => {
     expect(hasEvent(next.news, 'strike')).toBe(true)
   })
 
-  it('limits bishop moves to at most 2 squares while working to rule, leaving other pieces alone', () => {
-    const fen = 'k7/8/8/8/8/8/8/K1B5 w - - 0 1'
+  it('counts a knight loss toward the same grievance as a bishop loss', () => {
+    // White's knight is captured; white's reply is a king move, not a
+    // recapture (there's nothing left to recapture with).
+    let state = {
+      chess: new Chess('k7/8/8/4p3/3N4/8/8/K7 b - - 0 1'),
+      unions: createUnionState(),
+      news: [],
+    }
+    state = applyMove(state, 'exd4')
+    state = applyMove(state, 'Ka2')
+
+    expect(state.unions.white.minors.grievance).toBe(1)
+    expect(hasEvent(state.news, 'grievance-filed')).toBe(true)
+  })
+
+  it('limits bishop moves to at most 2 squares while working to rule, leaving knights and other pieces alone', () => {
+    const fen = 'k7/8/8/8/8/8/8/K1B2N2 w - - 0 1'
     const unions = createUnionState()
     unions.white = {
       ...unions.white,
-      bishops: { ...unions.white.bishops, grievance: 2, status: 'strike', turnsLeft: 2 },
+      minors: { ...unions.white.minors, grievance: 2, status: 'strike', turnsLeft: 2 },
     }
 
     const result = legalMoves(new Chess(fen), unions)
@@ -193,6 +208,25 @@ describe('bishop work-to-rule', () => {
     expect(sans).not.toContain('Bf4') // 3 squares away: blocked
     expect(sans).not.toContain('Bh6') // 5 squares away: blocked
     expect(sans).toContain('Ka2') // king moves are never affected
+    // Knights fed the same grievance but are never themselves restricted.
+    expect(sans).toContain('Nd2')
+    expect(sans).toContain('Ng3')
+  })
+
+  it('does not count an unpaid loss while the union is cooling down', () => {
+    const unions = createUnionState()
+    unions.white = {
+      ...unions.white,
+      minors: { grievance: 0, status: 'cooldown', turnsLeft: 3, pendingUnpaidLoss: true },
+    }
+    const chess = new Chess('k7/8/8/8/8/8/8/K5N1 w - - 0 1')
+
+    const next = applyMove({ chess, unions, news: [] }, 'Nf3')
+
+    expect(next.unions.white.minors.grievance).toBe(0)
+    expect(next.unions.white.minors.status).toBe('cooldown')
+    expect(next.unions.white.minors.pendingUnpaidLoss).toBe(false)
+    expect(hasEvent(next.news, 'grievance-filed')).toBe(false)
   })
 })
 
