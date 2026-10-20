@@ -5,6 +5,7 @@ import {
   describeBlockedMove as describeBlockedMoveFor,
   describeBlockedSquare as describeBlockedSquareFor,
 } from '../lib/blockedMoves'
+import { playGameOverSoundIfOver, playMoveResultSound, playSoundForNewsEvent } from '../lib/gameSounds'
 
 function matchesCandidate(candidate, moveArg) {
   if (typeof moveArg === 'string') {
@@ -44,6 +45,9 @@ export function useGame() {
       const stamped = result.news.map((event) => ({ ...event, moveNumber }))
       finalUnions = result.unions
       finalNews = [...stamped, ...nextNews]
+      // Right where the strike-break news item itself is produced, same as
+      // every other sound trigger in this file.
+      for (const event of result.news) playSoundForNewsEvent(event)
     }
 
     setFen(chess.fen())
@@ -72,8 +76,8 @@ export function useGame() {
   // normally fail; the guard is a defensive no-op otherwise.
   function makeMove(moveArg) {
     const chess = chessRef.current
-    const allowed = currentMoves.some((candidate) => matchesCandidate(candidate, moveArg))
-    if (!allowed) return false
+    const candidate = currentMoves.find((move) => matchesCandidate(move, moveArg))
+    if (!candidate) return false
 
     snapshotsRef.current.push({ fen: chess.fen(), unions })
 
@@ -84,6 +88,13 @@ export function useGame() {
     const stampedNews = next.news.map((event, index) =>
       index < newCount ? { ...event, moveNumber } : event,
     )
+
+    // Same point the move itself is applied, and the news items it
+    // produces (grievance/strike) are generated right here too.
+    playMoveResultSound({ isCapture: Boolean(candidate.captured), isCheck: chess.inCheck() })
+    for (const event of next.news.slice(0, newCount)) playSoundForNewsEvent(event)
+    playGameOverSoundIfOver(chess)
+
     settle(next.chess, next.unions, stampedNews)
     return true
   }

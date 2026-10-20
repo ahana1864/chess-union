@@ -1,3 +1,5 @@
+import { SoundToggle } from './SoundToggle'
+
 export function Header({ onNewGame, onShowRules }) {
   return (
     <header className="app-header">
@@ -9,6 +11,7 @@ export function Header({ onNewGame, onShowRules }) {
         <p className="tagline">Chess where the pieces unionize</p>
       </div>
       <div className="header-actions">
+        <SoundToggle />
         <button
           type="button"
           className="header-button header-button-outline"

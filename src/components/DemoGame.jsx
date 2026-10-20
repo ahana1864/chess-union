@@ -9,9 +9,15 @@ import { buildPieceRenderers } from './pieceRenderers'
 import { UnionPanel } from './UnionPanel'
 import { StrikeBanner } from './StrikeBanner'
 import { NewsFeed } from './NewsFeed'
+import { SoundToggle } from './SoundToggle'
 import { useGlyphOffsets } from '../hooks/useGlyphOffsets'
+import { playGameOverSoundIfOver, playMoveResultSound, playSoundForNewsEvent } from '../lib/gameSounds'
 
 const CASE_COUNT = DEMO_CASES.length
+
+function countPieces(fen) {
+  return fen.split(' ')[0].replace(/[^a-zA-Z]/g, '').length
+}
 
 // Plays the scripted demo: a single index walks DEMO_TIMELINE (precomputed
 // once from the real engine -- see demoScript.js / demoRunner.js), each
@@ -38,6 +44,23 @@ export function DemoGame({ onExit }) {
   }, [playing, finished, index, item])
 
   const chess = useMemo(() => (item ? new Chess(item.frame.fen) : null), [item])
+  const prevFenRef = useRef(null)
+
+  // Same events drive sound here as drive the news feed and banners above
+  // -- just read from the frame that's now on screen instead of generated
+  // live, since the demo's moves are precomputed.
+  useEffect(() => {
+    if (!item) return
+    for (const event of item.frame.news) playSoundForNewsEvent(event)
+    if (item.frame.kind === 'move') {
+      const prevFen = prevFenRef.current
+      const isCapture = prevFen ? countPieces(item.frame.fen) < countPieces(prevFen) : false
+      playMoveResultSound({ isCapture, isCheck: chess.inCheck() })
+    }
+    prevFenRef.current = item.frame.fen
+    playGameOverSoundIfOver(chess)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index])
 
   const bannerEvent = item?.frame.news.find(
     (event) => event.type === 'strike' || event.type === 'strike-break',
@@ -120,6 +143,7 @@ export function DemoGame({ onExit }) {
           Case {item.caseIndex + 1} of {CASE_COUNT}: {demoCase.title}
         </div>
         <div className="header-actions">
+          <SoundToggle />
           <button type="button" className="header-button header-button-outline" onClick={togglePlaying}>
             {playing ? 'Pause' : 'Resume'}
           </button>
