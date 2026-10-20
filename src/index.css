@@ -517,6 +517,94 @@ body {
   pointer-events: none;
 }
 
+/* ---------- Chaos Mode: mood dots, speech bubble, legend ---------- */
+
+.mood-dot {
+  position: absolute;
+  top: 4%;
+  left: 4%;
+  width: 14%;
+  height: 14%;
+  min-width: 8px;
+  min-height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  pointer-events: none;
+}
+
+.mood-dot-calm {
+  background: var(--calm-fg);
+}
+
+.mood-dot-uneasy {
+  background: var(--warn);
+}
+
+.mood-dot-angry {
+  background: var(--strike);
+}
+
+.speech-bubble {
+  position: absolute;
+  top: -6%;
+  right: -6%;
+  background: var(--panel);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font: 700 11px 'Barlow', sans-serif;
+  padding: 2px 7px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.chaos-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chaos-legend h2 {
+  font-size: 22px;
+}
+
+.chaos-legend p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.4;
+}
+
+.chaos-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 13px;
+}
+
+.chaos-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chaos-legend-list .mood-dot {
+  position: static;
+  width: 12px;
+  height: 12px;
+  min-width: 0;
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.choice-card-chaos {
+  width: 100%;
+  text-align: left;
+}
+
 /* ---------- Strike banner ---------- */
 
 .strike-banner {

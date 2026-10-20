@@ -9,10 +9,11 @@ const SIDES = [
 export function StartScreen({ onStart, onWatchDemo }) {
   const [mode, setMode] = useState('two-players')
   const [side, setSide] = useState('white')
+  const [chaos, setChaos] = useState(false)
 
   function handleStart() {
     const resolvedSide = side === 'random' ? (Math.random() < 0.5 ? 'white' : 'black') : side
-    onStart({ mode, side: resolvedSide })
+    onStart({ mode, side: resolvedSide, chaos })
   }
 
   return (
@@ -34,10 +35,12 @@ export function StartScreen({ onStart, onWatchDemo }) {
           </button>
           <button
             type="button"
-            className={`choice-card ${mode === 'vs-bot' ? 'choice-card-selected' : ''}`}
-            onClick={() => setMode('vs-bot')}
+            className={`choice-card ${mode === 'vs-bot' ? 'choice-card-selected' : ''} ${chaos ? 'choice-card-disabled' : ''}`}
+            onClick={() => !chaos && setMode('vs-bot')}
+            disabled={chaos}
           >
             Vs bot
+            {chaos ? <span className="choice-card-note">Not in Chaos Mode</span> : null}
           </button>
         </div>
 
@@ -53,6 +56,22 @@ export function StartScreen({ onStart, onWatchDemo }) {
             </button>
           ))}
         </div>
+
+        <button
+          type="button"
+          className={`choice-card choice-card-chaos ${chaos ? 'choice-card-selected' : ''}`}
+          aria-pressed={chaos}
+          onClick={() => {
+            const next = !chaos
+            setChaos(next)
+            if (next) setMode('two-players')
+          }}
+        >
+          Chaos Mode
+          <span className="choice-card-note">
+            Every piece gets its own personality, fatigue, grievance and anger
+          </span>
+        </button>
 
         <button type="button" className="start-button" onClick={handleStart}>
           Start

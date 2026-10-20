@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Game } from './components/Game'
+import { ChaosGame } from './components/ChaosGame'
 import { DemoGame } from './components/DemoGame'
 import { StartScreen } from './components/StartScreen'
 import { RulesModal } from './components/RulesModal'
@@ -56,7 +57,14 @@ function App() {
   return (
     <>
       {screen === 'start' ? <StartScreen onStart={startGame} onWatchDemo={startDemo} /> : null}
-      {screen === 'game' ? (
+      {screen === 'game' && config?.chaos ? (
+        <ChaosGame
+          config={config}
+          onReturnToStart={returnToStart}
+          onShowRules={() => setRulesOpen(true)}
+        />
+      ) : null}
+      {screen === 'game' && !config?.chaos ? (
         <Game
           config={config}
           onReturnToStart={returnToStart}
