@@ -546,6 +546,12 @@ body {
   overflow: hidden;
 }
 
+.strike-banner-icon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
 .strike-banner-text {
   display: flex;
   flex-direction: column;

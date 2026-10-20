@@ -1,33 +1,28 @@
-function sideName(side) {
-  return side === 'white' ? "White's" : "Black's"
-}
-
-function pluralTurns(n) {
-  return `${n} turn${n === 1 ? '' : 's'}`
-}
-
-// Pawns only: minors (work-to-rule) and rooks (sit-out) are shown entirely
-// through the union card and the news feed instead -- see UI-SPEC.
-export function StrikeBanner({ kind, side, turnsLeft }) {
-  const title = kind === 'strike-break' ? 'THE KING CROSSES THE PICKET LINE' : 'PAWNS ON STRIKE'
-
-  const detail =
-    kind === 'strike-break'
-      ? `${sideName(side)} pawns break the strike to get out of check, and head straight into cooldown.`
-      : `${sideName(side)} pawns won't move or capture for ${pluralTurns(turnsLeft)}. Capture something to cool things down.`
-
+// Shows one union event (strike, work-to-rule, sit-out, or the pawns-only
+// strike-break) as a dismissible banner. icon is null for the pawn cases,
+// which keep the picket-sign placard instead; otherwise it's the path to a
+// status icon (anger.png, zzz.png) shown in its place. Content is built by
+// src/lib/bannerContent.js, not here, so this component stays a dumb
+// title/subtitle/icon shell that Game.jsx can queue multiple of.
+export function StrikeBanner({ title, subtitle, icon }) {
   return (
     <div className="strike-banner" role="status">
       <div className="strike-banner-sign" aria-hidden="true">
-        <div className="strike-banner-stick" />
-        <div className="strike-banner-placard">
-          <span className="picket-stripe picket-stripe-strike" />
-          <span className="picket-stripe picket-stripe-ink" />
-        </div>
+        {icon ? (
+          <img src={icon} alt="" className="strike-banner-icon" />
+        ) : (
+          <>
+            <div className="strike-banner-stick" />
+            <div className="strike-banner-placard">
+              <span className="picket-stripe picket-stripe-strike" />
+              <span className="picket-stripe picket-stripe-ink" />
+            </div>
+          </>
+        )}
       </div>
       <div className="strike-banner-text">
         <p className="strike-banner-title">{title}</p>
-        <p className="strike-banner-detail">{detail}</p>
+        <p className="strike-banner-detail">{subtitle}</p>
       </div>
     </div>
   )

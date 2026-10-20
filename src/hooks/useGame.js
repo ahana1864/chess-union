@@ -52,8 +52,25 @@ export function useGame() {
     setCurrentMoves(result.moves)
   }
 
-  // Why a square with a piece on it has no (or fewer) move options than
-  // chess.js alone would allow — null if the piece isn't blocked by a union.
+  // The toast text for a piece whose union is currently restricting it —
+  // null if that union isn't actually why it can't make this move.
+  function blockedByUnionText(piece, side) {
+    const sideUnions = unions[side]
+    if (piece.type === 'p' && sideUnions.pawns.status === 'strike') {
+      return `Pawns are on strike (${pluralTurns(sideUnions.pawns.turnsLeft)} left)`
+    }
+    if (piece.type === 'b' && sideUnions.minors.status === 'strike') {
+      return `Bishops are on work-to-rule (${pluralTurns(sideUnions.minors.turnsLeft)} left)`
+    }
+    if (piece.type === 'r' && sideUnions.rooks.status === 'strike') {
+      return `Rooks are asleep (${pluralTurns(sideUnions.rooks.turnsLeft)} left)`
+    }
+    return null
+  }
+
+  // Why a square with a piece on it has no move options at all (used when
+  // the player first clicks/grabs it) — null if the piece isn't blocked by
+  // a union.
   function describeBlockedSquare(square) {
     const chess = chessRef.current
     const piece = chess.get(square)
@@ -66,11 +83,30 @@ export function useGame() {
     if (stillAllowed) return null
 
     const side = chess.turn() === 'w' ? 'white' : 'black'
-    const pawns = unions[side].pawns
-    if (piece.type === 'p' && pawns.status === 'strike') {
-      return `Pawns are on strike (${pluralTurns(pawns.turnsLeft)} left)`
-    }
-    return 'That piece is sitting out right now.'
+    return blockedByUnionText(piece, side) ?? 'That piece is sitting out right now.'
+  }
+
+  // Why one specific move isn't allowed (used when the player has a piece
+  // selected and tries a particular target square, e.g. a bishop reaching
+  // past its work-to-rule limit while it still has other legal moves) —
+  // null if that exact move is legal, or isn't a real chess move at all.
+  function describeBlockedMove(fromSquare, toSquare) {
+    const chess = chessRef.current
+    const piece = chess.get(fromSquare)
+    if (!piece) return null
+
+    const isRealChessMove = chess
+      .moves({ square: fromSquare, verbose: true })
+      .some((move) => move.to === toSquare)
+    if (!isRealChessMove) return null
+
+    const stillAllowed = currentMoves.some(
+      (move) => move.from === fromSquare && move.to === toSquare,
+    )
+    if (stillAllowed) return null
+
+    const side = chess.turn() === 'w' ? 'white' : 'black'
+    return blockedByUnionText(piece, side)
   }
 
   // Only ever called with moves drawn from currentMoves, so this should not
@@ -108,5 +144,6 @@ export function useGame() {
     makeMove,
     newGame,
     describeBlockedSquare,
+    describeBlockedMove,
   }
 }

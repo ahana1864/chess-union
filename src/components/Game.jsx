@@ -13,8 +13,9 @@ import { statusText } from '../lib/statusText'
 import { pickBotMove } from '../lib/bot'
 import { getCapturedPieces } from '../lib/capturedPieces'
 import { CapturedTray } from './CapturedTray'
-import { sideHasBishop } from '../lib/boardInfo'
+import { restrictedSquares, sideHasBishop } from '../lib/boardInfo'
 import { useGlyphOffsets } from '../hooks/useGlyphOffsets'
+import { bannerContentFor } from '../lib/bannerContent'
 
 const FILES = 'abcdefgh'
 const BANNER_VISIBLE_MS = 2200
@@ -43,12 +44,13 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   const [blockedMessage, setBlockedMessage] = useState(null)
   const [shakingSquare, setShakingSquare] = useState(null)
   const [banner, setBanner] = useState(null)
+  const [bannerQueue, setBannerQueue] = useState([])
   const [botThinking, setBotThinking] = useState(false)
 
   const blockedTimeoutRef = useRef(null)
   const shakeTimeoutRef = useRef(null)
   const bannerTimeoutRef = useRef(null)
-  const lastBannerEventRef = useRef(null)
+  const lastNewsLengthRef = useRef(0)
   const boardWrapRef = useRef(null)
   const glyphOffsets = useGlyphOffsets(boardWrapRef)
 
@@ -86,24 +88,42 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBotTurn, game.fen, game.currentMoves])
 
-  // Shows the strike / strike-break banner once per genuinely new pawns
-  // event (news is newest-first, so we only act when that first event
-  // changes), then auto-dismisses it; the status chips and picket signs
-  // carry the rest of the strike. Minors (work-to-rule) and rooks (sit-out)
-  // never get a banner -- the union card and news feed carry those.
+  // Queues a banner for every genuinely new strike / work-to-rule / sit-out
+  // event (news is newest-first; we diff against the length we last saw so
+  // a single move that trips more than one union at once -- e.g. a quiet
+  // rook move that both completes a pawn's grievance and extends the rook
+  // streak -- queues all of them instead of only the first). Strike-break
+  // only gets a banner for pawns; see bannerContent.js.
   useEffect(() => {
-    const latest = game.news[0]
-    if (!latest || latest === lastBannerEventRef.current) return
-    lastBannerEventRef.current = latest
-    if (latest.type !== 'strike' && latest.type !== 'strike-break') return
-    if (latest.union !== 'pawns') return
+    const newCount = game.news.length - lastNewsLengthRef.current
+    lastNewsLengthRef.current = game.news.length
+    if (newCount <= 0) return
 
-    const turnsLeft = game.unions[latest.side]?.pawns?.turnsLeft ?? 0
-    setBanner({ kind: latest.type, side: latest.side, turnsLeft })
+    const newEvents = game.news.slice(0, newCount)
+    const items = newEvents
+      .filter(
+        (event) =>
+          event.type === 'strike' || (event.type === 'strike-break' && event.union === 'pawns'),
+      )
+      .reverse()
+      .map((event) => bannerContentFor(event, game.unions))
+
+    if (items.length > 0) setBannerQueue((queue) => [...queue, ...items])
+  }, [game.news, game.unions])
+
+  // Shows the next queued banner once the current one has cleared, so
+  // multiple banners from the same move display one after another instead
+  // of stepping on each other.
+  useEffect(() => {
+    if (banner || bannerQueue.length === 0) return
+
+    const [next, ...rest] = bannerQueue
+    setBanner(next)
+    setBannerQueue(rest)
 
     clearTimeout(bannerTimeoutRef.current)
     bannerTimeoutRef.current = setTimeout(() => setBanner(null), BANNER_VISIBLE_MS)
-  }, [game.news, game.unions])
+  }, [banner, bannerQueue])
 
   useEffect(
     () => () => {
@@ -174,6 +194,11 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     )
 
     if (candidates.length === 0) {
+      const blockedReason = game.describeBlockedMove(moveFrom, square)
+      if (blockedReason) {
+        showBlocked(moveFrom, blockedReason)
+        return
+      }
       if (piece) {
         setMoveFrom(getMoveOptions(square) ? square : '')
       } else {
@@ -200,7 +225,10 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     )
 
     if (candidates.length === 0) {
-      showBlocked(sourceSquare, game.describeBlockedSquare(sourceSquare))
+      const message =
+        game.describeBlockedMove(sourceSquare, targetSquare) ??
+        game.describeBlockedSquare(sourceSquare)
+      showBlocked(sourceSquare, message)
       return false
     }
 
@@ -271,6 +299,10 @@ export function Game({ config, onReturnToStart, onShowRules }) {
   const trayFor = (side) => (side === 'white' ? byWhite : byBlack)
   const capturedColorFor = (side) => (side === 'white' ? 'black' : 'white')
   const hasBishop = { white: sideHasBishop(chess, 'white'), black: sideHasBishop(chess, 'black') }
+  const restrictedSet = new Set([
+    ...restrictedSquares(chess, game.unions, 'white'),
+    ...restrictedSquares(chess, game.unions, 'black'),
+  ])
 
   const chessboardOptions = {
     id: 'chess-union-board',
@@ -280,7 +312,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
     onPieceDrop,
     onSquareClick,
     squareStyles: buildSquareStyles(),
-    pieces: buildPieceRenderers(game.unions, shakingSquare, glyphOffsets),
+    pieces: buildPieceRenderers(game.unions, shakingSquare, glyphOffsets, restrictedSet),
     showNotation: true,
     darkSquareStyle: { backgroundColor: 'var(--sq-dark)' },
     lightSquareStyle: { backgroundColor: 'var(--sq-light)' },
@@ -319,7 +351,7 @@ export function Game({ config, onReturnToStart, onShowRules }) {
 
           <div className="board-wrap" ref={boardWrapRef}>
             {banner ? (
-              <StrikeBanner kind={banner.kind} side={banner.side} turnsLeft={banner.turnsLeft} />
+              <StrikeBanner title={banner.title} subtitle={banner.subtitle} icon={banner.icon} />
             ) : null}
             <Chessboard options={chessboardOptions} />
             {promotionMove ? (

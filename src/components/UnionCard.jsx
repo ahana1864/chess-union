@@ -9,8 +9,20 @@ const UNION_LABELS = {
 const STATUS_LABELS = {
   calm: 'Calm',
   grumbling: 'Grumbling',
-  strike: 'On strike',
   cooldown: 'Cooldown',
+}
+
+// "strike" status reads differently per union: pawns actually strike,
+// minors work to rule, rooks just sit out one turn.
+const STRIKE_LABELS = {
+  pawns: 'On strike',
+  minors: 'On work-to-rule',
+  rooks: 'Sitting out',
+}
+
+function statusLabel(unionKey, status) {
+  if (status === 'strike') return STRIKE_LABELS[unionKey]
+  return STATUS_LABELS[status]
 }
 
 // Rooks track consecutive moves rather than grievance, and their "strike"
@@ -44,7 +56,7 @@ function UnionRow({ unionKey, data, hasBishop }) {
       <div className="union-row-header">
         <span className="union-row-name">{UNION_LABELS[unionKey]}</span>
         <span className={`status-chip status-chip-${data.status}`}>
-          {STATUS_LABELS[data.status]}
+          {statusLabel(unionKey, data.status)}
         </span>
       </div>
       <div className="union-meter">
