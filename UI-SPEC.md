@@ -10,8 +10,8 @@ Desktop only. The mobile layout and PWA were dropped from scope; the Mobile mock
 
 | Layout | Breakpoint | Reference size | Structure |
 | --- | --- | --- | --- |
-| Desktop | 900px and up | 1440 × 900 | Header (68px), then three columns: unions 320px, board centre, news and moves 360px. No page scroll. |
-| Compact desktop | 900 to 1199px | 1024 × 768 | Same three columns, with the side columns narrowed to 260px and 280px and the board sized to fit (see Board). |
+| Desktop | 900px and up | 1440 × 900 | Header (68px), then three columns: unions 320px, board centre, news and moves 260px. No page scroll. |
+| Compact desktop | 900 to 1199px | 1024 × 768 | Same three columns, with the side columns narrowed to 260px and 220px and the board sized to fit (see Board). |
 
 Page background is `--paper`. All text meets 4.5:1 contrast on the surface it sits on.
 
@@ -57,7 +57,7 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
 - **Legal-move dot:** 24px circle (on 80px squares), `rgba(27,26,23,0.3)`, centred on empty target squares.
 - **Capture ring:** circle inset 4px with a 6px border `rgba(215,38,61,0.6)`.
 - **Last move:** both squares use the `-hl` colours. **Selected piece:** `--sq-selected`.
-- **Board size:** computed as `min(820px, 100dvh - 68px - 170px, 100vw - unions column - news column - 64px)` — a cap of 820px, header (68px) plus room for the status line, the player bars above and below the board, and padding (170px), and the width left over after the two side columns and their gutters (64px). That's about 662px at 1440 × 900, about 482px at 1280 × 720, and about 420px at 1024 × 768 (where the side columns narrow to 260px/280px, and the width term binds instead).
+- **Board size:** computed as `min(920px, 100dvh - 68px - 170px, 100vw - unions column - news column - 64px)` — a cap of 920px, header (68px) plus room for the status line, the player bars above and below the board, and padding (170px), and the width left over after the two side columns and their gutters (64px). At 1440 × 900 and 1280 × 720 the height term binds (about 662px and 482px — unchanged from before, since those are height-limited, not width-limited), while at 1024 × 768 the width term binds and benefits from the narrower news column: about 480px (up from 420px), with the side columns at 260px/220px.
 - **Picket sign (on striking pawns):** a small cardboard placard on a stick in the top-right of the pawn's square, rotated 8°. Placard 30 × 20, `--cardboard`, 2px `--ink` border, two stripes inside (3px `--strike`, 3px `--ink`); stick 3 × 16, `--ink`. Decorative, so `aria-hidden="true"`.
 
 ## Header
@@ -94,7 +94,7 @@ Icons: Lucide-style outline, stroke 2, rounded caps. Icon-only buttons need an `
   - Rooks: "Rooks are asleep ({n} turn left)"
   The blocked piece shakes (translateX ±4px, 200ms) when the player tries to move it.
 
-## Desktop: right column, "Union News" and moves (360px)
+## Desktop: right column, "Union News" and moves (260px)
 
 - Padding 20, left border 2px `--ink`, gap 14.
 - Heading row: "UNION NEWS" in Anton 22px and a "LIVE" label (12px/700 `--strike`) with an 8px dot.

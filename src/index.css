@@ -165,7 +165,7 @@ body {
      back into the space freed up when these columns narrow at the
      compact-desktop breakpoint. */
   --unions-width: 320px;
-  --news-width: 360px;
+  --news-width: 260px;
 }
 
 .unions-column {
@@ -193,7 +193,7 @@ body {
      below the board, and this column's own gaps/padding, so the board
      still fits with nothing clipped or scrolling. */
   --board-size: min(
-    820px,
+    920px,
     calc(100dvh - 68px - 170px),
     calc(100vw - var(--unions-width) - var(--news-width) - 64px)
   );
@@ -212,7 +212,7 @@ body {
 @media (min-width: 900px) and (max-width: 1199px) {
   .layout {
     --unions-width: 260px;
-    --news-width: 280px;
+    --news-width: 220px;
   }
 }
 
