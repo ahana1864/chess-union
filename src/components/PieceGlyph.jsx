@@ -28,11 +28,12 @@ const GLYPH_STYLE_BASE = {
 
 // badge: null | { type: 'picket' } (striking pawns) | { type: 'icon', src,
 // sizePercent } (work-to-rule bishops, sitting-out rooks).
-// offset: null | { x, y } in px, from useGlyphOffsets -- nudges the glyph so
-// its actual ink sits at the square's centre instead of the font's layout
-// centre.
+// offset: null | { y } in px, from useGlyphOffsets -- nudges the glyph
+// vertically so its actual ink sits at the square's centre instead of the
+// font's layout centre. Horizontal centring is already correct from
+// place-items: center, so only y is corrected.
 export function PieceGlyph({ pieceType, isWhite, badge = null, shake = false, offset = null }) {
-  const transform = offset ? `translate(${offset.x}px, ${offset.y}px)` : undefined
+  const transform = offset ? `translateY(${offset.y}px)` : undefined
   return (
     <div className={shake ? 'piece-shake' : undefined} style={CONTAINER_STYLE}>
       <div
