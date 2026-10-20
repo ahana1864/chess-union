@@ -1,5 +1,7 @@
 # Chess Union
 
+**Live:** [chess-union.vercel.app](https://chess-union.vercel.app)
+
 ![White's pawns on strike, picket sign up, news feed reporting it](docs/screenshot.jpg)
 
 Chess where the pieces unionize. Lose pieces for nothing and their union
