@@ -174,7 +174,10 @@ describe('grievance, anger and striking', () => {
 
     expect(hasEvent(state.news, 'grievance-nearby')).toBe(true)
     const rook = Object.values(state.chaos.piecesById).find((p) => p.type === 'r' && p.color === 'w')
-    expect(rook.grievance).toBeGreaterThan(0)
+    // A single adjacent unpaid loss is now enough to push some personalities
+    // straight to striking (which zeroes grievance the same move, same as
+    // classic unions do) -- either outcome means the loss was felt.
+    expect(rook.grievance > 0 || rook.status === 'striking').toBe(true)
     expect(rook.anger).toBeGreaterThan(0)
   })
 

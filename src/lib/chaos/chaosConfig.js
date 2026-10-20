@@ -58,7 +58,7 @@ export const CHAOS_CONFIG = {
   // threshold the piece sleeps through its side's next turn.
   fatiguePerMove: 2,
   fatigueDecayPerTurn: 1,
-  sleepThreshold: 4,
+  sleepThreshold: 3,
   sleepDuration: 1,
 
   // Grievance: an unpaid loss (the losing side's very next move isn't a
@@ -66,16 +66,16 @@ export const CHAOS_CONFIG = {
   // adjacent to the square the piece was lost on. Any capture by a side
   // lowers every one of its own pieces' grievance and anger a little. At
   // the grievance threshold the piece strikes.
-  grievancePerAdjacentUnpaidLoss: 3,
+  grievancePerAdjacentUnpaidLoss: 4,
   grievanceDecayPerCapture: 2,
-  strikeThreshold: 5,
+  strikeThreshold: 4,
   strikeDuration: 2,
 
   // Anger: rises and falls with grievance (see above) but on its own
   // counter and its own multipliers. At the threshold the piece turns
   // "rebel" -- on its own turns it may refuse to move, or move itself
   // instead, per its personality's rebelChance.
-  angerPerAdjacentUnpaidLoss: 3,
+  angerPerAdjacentUnpaidLoss: 4,
   angerDecayPerCapture: 2,
   furiousThreshold: 4,
 }
